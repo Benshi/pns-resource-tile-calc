@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PNS Resource Tile Calc</title>
   
-  <!-- Favicon (Emoji placeholder to prevent 404) -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧮</text></svg>">
-  
-  <!-- Cache-busted Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=1.0.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🧮%3C/text%3E%3C/svg%3E">
+
+  <link rel="stylesheet" href="styles.css?v=1.0.2">
 </head>
 <body>
 
@@ -60,7 +58,7 @@
           </tr>
         </thead>
         <tbody id="tableBody">
-          <!-- Dynamically rendered via JS -->
+          <!-- generate by JS -->
         </tbody>
       </table>
     </div>
@@ -79,7 +77,6 @@
   </footer>
 </div>
 
-<!-- Modal Popup for Help Image -->
 <div id="helpModal" class="modal-overlay">
   <div class="modal-content">
     <div class="modal-img-wrapper">
@@ -89,11 +86,9 @@
   </div>
 </div>
 
-<!-- Cache-busted external translation dictionary -->
-<script src="i18n.js?v=1.0.0"></script>
+<script src="i18n.js?v=1.0.1"></script>
 
 <script>
-// --- Master Data ---
 const RESOURCE_TYPES = [
   { key: 'food', ratio: 20 },
   { key: 'wood', ratio: 20 },
@@ -106,7 +101,7 @@ const BASE_AMOUNTS = {
 };
 
 const DEFAULT_SETTINGS = {
-  lang: 'ja',
+  lang: 'en',
   showSeconds: false,
   globalBuff: 50.0,
   foodSpeed: 50.0,
@@ -117,7 +112,6 @@ const DEFAULT_SETTINGS = {
 
 let state = { ...DEFAULT_SETTINGS };
 
-// --- Browser Language Auto-Detection ---
 function detectBrowserLanguage() {
   const browserLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
   
@@ -128,10 +122,9 @@ function detectBrowserLanguage() {
   if (browserLang.startsWith('ru')) return 'ru';
   if (browserLang.startsWith('en')) return 'en';
   
-  return 'ja';
+  return 'en';
 }
 
-// --- Load Settings ---
 function loadState() {
   state.lang = detectBrowserLanguage();
 
@@ -154,7 +147,6 @@ function loadState() {
   if (params.has('lang')) state.lang = params.get('lang');
 }
 
-// --- Save Settings and Sync URL ---
 function saveAndSync() {
   localStorage.setItem('pns_gather_calc_settings', JSON.stringify(state));
 
@@ -171,7 +163,6 @@ function saveAndSync() {
   document.getElementById('shareUrlInput').value = newUrl;
 }
 
-// --- Core Calculation Logic ---
 function calculateSeconds(baseAmount, globalBuff, specificBuff) {
   const totalBuff = globalBuff + specificBuff;
   const speedFactor = 2160 * ((120 + totalBuff) / 100);
@@ -191,42 +182,41 @@ function formatTime(totalSeconds, showSeconds) {
   return `${pad(h)}:${pad(m)}`;
 }
 
-// --- Help Image Path Resolution with Fallback ---
-function updateHelpImageSrc() {
+function openHelpModal() {
   const imgElem = document.getElementById('helpImage');
-  const primarySrc = `help_${state.lang}.png`;
-  const fallbackSrc = `help_en.png`;
+  const primarySrc = `img/help/${state.lang}.png`;
+  const fallbackSrc = `img/help/en.png`;
 
   imgElem.onerror = function() {
-    if (this.src !== fallbackSrc) {
-      this.src = fallbackSrc;
-    }
+    this.onerror = null;
+    this.src = fallbackSrc;
   };
 
   imgElem.src = primarySrc;
+
+  document.getElementById('helpModal').classList.add('active');
 }
 
-// --- UI Rendering ---
 function updateLanguage() {
   const lang = state.lang;
-  const dict = (typeof I18N !== 'undefined' && I18N[lang]) ? I18N[lang] : I18N.ja;
+  const dict = (typeof I18N !== 'undefined' && I18N[lang]) ? I18N[lang] : (I18N ? I18N.en : {});
 
-  document.getElementById('ui-title').innerText = dict.title;
-  document.getElementById('ui-globalBuffLabel').innerText = dict.globalBuff;
-  document.getElementById('ui-showSecondsLabel').innerText = dict.showSeconds;
-  document.getElementById('ui-thResource').innerText = dict.resource;
-  document.getElementById('ui-thSpeed').innerText = `${dict.speed} (%)`;
-  document.getElementById('ui-shareTitle').innerText = dict.shareUrl;
-  document.getElementById('copyBtn').innerText = dict.copyBtn;
-  document.getElementById('ui-helpBtnText').innerText = dict.helpBtn;
-  document.getElementById('closeModalBtn').innerText = dict.closeBtn;
+  if (!dict) return;
+
+  document.getElementById('ui-title').innerText = dict.title || '';
+  document.getElementById('ui-globalBuffLabel').innerText = dict.globalBuff || '';
+  document.getElementById('ui-showSecondsLabel').innerText = dict.showSeconds || '';
+  document.getElementById('ui-thResource').innerText = dict.resource || '';
+  document.getElementById('ui-thSpeed').innerText = `${dict.speed || ''} (%)`;
+  document.getElementById('ui-shareTitle').innerText = dict.shareUrl || '';
+  document.getElementById('copyBtn').innerText = dict.copyBtn || '';
+  document.getElementById('ui-helpBtnText').innerText = dict.helpBtn || '';
+  document.getElementById('closeModalBtn').innerText = dict.closeBtn || '';
 
   RESOURCE_TYPES.forEach(res => {
     const labelElem = document.getElementById(`label-text-${res.key}`);
-    if (labelElem) labelElem.innerText = dict[res.key];
+    if (labelElem) labelElem.innerText = dict[res.key] || res.key;
   });
-
-  updateHelpImageSrc();
 }
 
 function renderTable() {
@@ -242,14 +232,18 @@ function renderTable() {
     const resContent = document.createElement('div');
     resContent.className = 'res-cell-content';
     
-    const iconSpan = document.createElement('span');
-    iconSpan.className = 'res-icon-placeholder';
-    iconSpan.id = `icon-${res.key}`;
+    const imgIcon = document.createElement('img');
+    imgIcon.className = 'res-icon';
+    imgIcon.src = `img/icon/${res.key}.png`;
+    imgIcon.alt = res.key;
+    imgIcon.onerror = function() {
+      this.style.display = 'none';
+    };
     
     const textSpan = document.createElement('span');
     textSpan.id = `label-text-${res.key}`;
 
-    resContent.appendChild(iconSpan);
+    resContent.appendChild(imgIcon);
     resContent.appendChild(textSpan);
     tdName.appendChild(resContent);
     tr.appendChild(tdName);
@@ -300,7 +294,6 @@ function recalculate() {
   });
 }
 
-// --- App Initialization ---
 function init() {
   loadState();
 
@@ -332,15 +325,13 @@ function init() {
     const urlInput = document.getElementById('shareUrlInput');
     urlInput.select();
     navigator.clipboard.writeText(urlInput.value).then(() => {
-      const dict = I18N[state.lang] || I18N.ja;
+      const dict = (typeof I18N !== 'undefined' && I18N[state.lang]) ? I18N[state.lang] : I18N.ja;
       alert(dict.copied);
     });
   });
 
   const helpModal = document.getElementById('helpModal');
-  document.getElementById('helpBtn').addEventListener('click', () => {
-    helpModal.classList.add('active');
-  });
+  document.getElementById('helpBtn').addEventListener('click', openHelpModal);
 
   document.getElementById('closeModalBtn').addEventListener('click', () => {
     helpModal.classList.remove('active');
