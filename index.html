@@ -185,6 +185,10 @@
   <script>
     const STORAGE_KEY = 'pns_resource_tile_calc';
     const LEVEL_BASES = [1000, 2000, 4000, 6750, 10000, 14000, 20000];
+    const BASE_GATHER_RATE = 2160;
+    const BASE_SPEED_PERCENT = 120;
+    const SECONDS_PER_HOUR = 3600;
+    const LANG_CODES = { ja: 'ja', en: 'en', zhHant: 'zh-Hant', zhHans: 'zh-Hans' };
 
     const RESOURCES = [
       { key: 'food', ratio: 20, buffId: 'foodBuff' },
@@ -267,15 +271,18 @@
     }
 
     function formatHms(totalSeconds) {
-      const h = Math.floor(totalSeconds / 3600);
-      const m = Math.floor((totalSeconds % 3600) / 60);
-      const s = totalSeconds % 60;
+      const wholeSeconds = Math.max(0, Math.floor(totalSeconds));
+      const h = Math.floor(wholeSeconds / 3600);
+      const m = Math.floor((wholeSeconds % 3600) / 60);
+      const s = wholeSeconds % 60;
       return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
 
     function calcSeconds(baseAmount, globalBuff, specificBuff) {
       const totalBuff = globalBuff + specificBuff;
-      const seconds = (baseAmount / (2160 * (120 + totalBuff) / 100)) * 3600;
+      const speedPercent = BASE_SPEED_PERCENT + totalBuff;
+      if (speedPercent <= 0) return 0;
+      const seconds = (baseAmount / (BASE_GATHER_RATE * speedPercent / 100)) * SECONDS_PER_HOUR;
       return Math.ceil(seconds);
     }
 
@@ -309,7 +316,7 @@
     function applyTranslations() {
       const lang = document.getElementById('language').value;
       const dict = I18N[lang] || I18N.en;
-      document.documentElement.lang = lang === 'ja' ? 'ja' : (lang === 'zhHant' ? 'zh-Hant' : (lang === 'zhHans' ? 'zh-Hans' : 'en'));
+      document.documentElement.lang = LANG_CODES[lang] || 'en';
       document.querySelectorAll('[data-i18n]').forEach((el) => {
         const key = el.getAttribute('data-i18n');
         if (dict[key]) el.textContent = dict[key];
@@ -376,8 +383,11 @@
         const input = document.getElementById(id);
         input.value = state[id] ?? 0;
         input.addEventListener('input', () => {
-          const clamped = getNumericInput(id);
-          if (!Number.isNaN(clamped)) input.value = clamped;
+          renderTable();
+          saveState();
+        });
+        input.addEventListener('change', () => {
+          input.value = getNumericInput(id);
           renderTable();
           saveState();
         });
