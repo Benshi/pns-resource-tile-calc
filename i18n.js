@@ -13,7 +13,16 @@ const I18N = {
     food: '食料',
     wood: '木材',
     steel: '鋼材',
-    gas: 'ガス'
+    gas: 'ガス',
+    presetLabel: 'プリセット:',
+    presetPlaceholder: '名前 (アカウント名等)',
+    savePreset: '保存',
+    deletePreset: '削除',
+    selectPresetDefault: '-- プリセット選択 --',
+    presetSaved: 'プリセットを保存しました。',
+    presetDeleted: 'プリセットを削除しました。',
+    overallSpeed: '全体速度',
+    resourceSpeed: '資源別速度'
   },
   en: {
     title: 'Gathering Time Calculator',
@@ -29,7 +38,16 @@ const I18N = {
     food: 'Food',
     wood: 'Wood',
     steel: 'Steel',
-    gas: 'Gas'
+    gas: 'Gas',
+    presetLabel: 'Preset:',
+    presetPlaceholder: 'Name (e.g. Main)',
+    savePreset: 'Save',
+    deletePreset: 'Delete',
+    selectPresetDefault: '-- Select Preset --',
+    presetSaved: 'Preset saved.',
+    presetDeleted: 'Preset deleted.',
+    overallSpeed: 'Overall Speed',
+    resourceSpeed: 'Resource Speed'
   },
   'zh-TW': {
     title: '資源採集時間計算器',
@@ -45,7 +63,16 @@ const I18N = {
     food: '糧食',
     wood: '木材',
     steel: '鋼材',
-    gas: '瓦斯'
+    gas: '瓦斯',
+    presetLabel: '預設:',
+    presetPlaceholder: '名稱 (帳號名稱等)',
+    savePreset: '儲存',
+    deletePreset: '刪除',
+    selectPresetDefault: '-- 選擇預設 --',
+    presetSaved: '預設已儲存。',
+    presetDeleted: '預設已刪除。',
+    overallSpeed: '整體速度',
+    resourceSpeed: '資源速度'
   },
   'zh-CN': {
     title: '资源采集时间计算器',
@@ -61,7 +88,16 @@ const I18N = {
     food: '粮食',
     wood: '木材',
     steel: '钢材',
-    gas: '燃气'
+    gas: '燃气',
+    presetLabel: '预设:',
+    presetPlaceholder: '名称 (账号名称等)',
+    savePreset: '保存',
+    deletePreset: '删除',
+    selectPresetDefault: '-- 选择预设 --',
+    presetSaved: '预设已保存。',
+    presetDeleted: '预设已删除。',
+    overallSpeed: '整体速度',
+    resourceSpeed: '资源速度'
   },
   ko: {
     title: '자원 채집 시간 계산기',
@@ -77,7 +113,16 @@ const I18N = {
     food: '식량',
     wood: '목재',
     steel: '강철',
-    gas: '가스'
+    gas: '가스',
+    presetLabel: '프리셋:',
+    presetPlaceholder: '이름 (계정명 등)',
+    savePreset: '저장',
+    deletePreset: '삭제',
+    selectPresetDefault: '-- 프리셋 선택 --',
+    presetSaved: '프리셋이 저장되었습니다.',
+    presetDeleted: '프리셋이 삭제되었습니다.',
+    overallSpeed: '전체 속도',
+    resourceSpeed: '자원별 속도'
   },
   ru: {
     title: 'Калькулятор времени сбора',
@@ -93,6 +138,15 @@ const I18N = {
     food: 'Еда',
     wood: 'Дерево',
     steel: 'Сталь',
-    gas: 'Газ'
+    gas: 'Газ',
+    presetLabel: 'Пресет:',
+    presetPlaceholder: 'Имя (аккаунт)',
+    savePreset: 'Сохранить',
+    deletePreset: 'Удалить',
+    selectPresetDefault: '-- Выбрать пресет --',
+    presetSaved: 'Пресет сохранен.',
+    presetDeleted: 'Пресет удален.',
+    overallSpeed: 'Общая скорость',
+    resourceSpeed: 'Скорость по ресурсам'
   }
 };

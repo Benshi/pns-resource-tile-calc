@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PNS Resource Tile Calc</title>
   
+  <!-- URL Encoded SVG Favicon -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🧮%3C/text%3E%3C/svg%3E">
-
-  <link rel="stylesheet" href="styles.css?v=1.0.2">
+  
+  <!-- Cache-busted Stylesheet -->
+  <link rel="stylesheet" href="styles.css?v=1.0.3">
 </head>
 <body>
 
@@ -25,43 +27,64 @@
       </select>
     </div>
 
-    <div class="controls-container">
-      <div class="buff-group">
-        <label for="globalBuff" id="ui-globalBuffLabel">Gathering Speed:</label>
-        <input type="number" id="globalBuff" class="number-input" step="0.1" min="0" max="300" inputmode="decimal">
-        <span>%</span>
-        <button id="helpBtn" class="help-btn">
-          <span>❓</span>
-          <span id="ui-helpBtnText">How to check buffs?</span>
-        </button>
+    <!-- 全体速度エリア（薄緑背景用グループ） -->
+    <section class="overall-speed-section">
+      <h2 class="section-title" id="ui-overallSpeedHeader">Overall Speed</h2>
+      
+      <div class="controls-container">
+        <div class="buff-group">
+          <label for="globalBuff" id="ui-globalBuffLabel">Gathering Speed:</label>
+          <input type="number" id="globalBuff" class="number-input" step="0.1" min="0" max="300" inputmode="decimal">
+          <span>%</span>
+          <button id="helpBtn" class="help-btn">
+            <span>❓</span>
+            <span id="ui-helpBtnText">How to check buffs?</span>
+          </button>
+        </div>
+
+        <label class="checkbox-group">
+          <input type="checkbox" id="showSecondsCheck">
+          <span id="ui-showSecondsLabel">Show Seconds</span>
+        </label>
       </div>
 
-      <label class="checkbox-group">
-        <input type="checkbox" id="showSecondsCheck">
-        <span id="ui-showSecondsLabel">Show Seconds</span>
-      </label>
-    </div>
+      <!-- Preset Management Controls -->
+      <div class="preset-container">
+        <label for="presetSelect" id="ui-presetLabel">Preset:</label>
+        <select id="presetSelect" class="preset-select">
+          <option value="" id="ui-selectPresetDefault">-- Select Preset --</option>
+        </select>
+        <input type="text" id="presetNameInput" class="preset-input" placeholder="Name">
+        <button id="savePresetBtn" class="preset-btn">Save</button>
+        <button id="deletePresetBtn" class="preset-btn btn-danger">Delete</button>
+      </div>
+    </section>
 
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th class="col-sticky-1" id="ui-thResource">Resource</th>
-            <th class="col-sticky-2" id="ui-thSpeed">Speed (%)</th>
-            <th>Lv7</th>
-            <th>Lv6</th>
-            <th>Lv5</th>
-            <th>Lv4</th>
-            <th>Lv3</th>
-            <th>Lv2</th>
-            <th>Lv1</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody">
-          <!-- generate by JS -->
-        </tbody>
-      </table>
-    </div>
+    <!-- 資源別速度エリア（薄紫背景用グループ） -->
+    <section class="resource-speed-section">
+      <h2 class="section-title" id="ui-resourceSpeedHeader">Resource Speed</h2>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-sticky-1" id="ui-thResource">Resource</th>
+              <th class="col-sticky-2" id="ui-thSpeed">Speed (%)</th>
+              <th>Lv7</th>
+              <th>Lv6</th>
+              <th>Lv5</th>
+              <th>Lv4</th>
+              <th>Lv3</th>
+              <th>Lv2</th>
+              <th>Lv1</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- Rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </section>
 
     <div class="share-container">
       <span class="share-title" id="ui-shareTitle">Share / Save URL:</span>
@@ -77,6 +100,7 @@
   </footer>
 </div>
 
+<!-- Modal Popup for Help Image -->
 <div id="helpModal" class="modal-overlay">
   <div class="modal-content">
     <div class="modal-img-wrapper">
@@ -86,9 +110,11 @@
   </div>
 </div>
 
-<script src="i18n.js?v=1.0.1"></script>
+<!-- Cache-busted Dictionary -->
+<script src="i18n.js?v=1.0.3"></script>
 
 <script>
+// --- Master Data ---
 const RESOURCE_TYPES = [
   { key: 'food', ratio: 20 },
   { key: 'wood', ratio: 20 },
@@ -111,7 +137,9 @@ const DEFAULT_SETTINGS = {
 };
 
 let state = { ...DEFAULT_SETTINGS };
+let presets = {};
 
+// --- Browser Language Auto-Detection ---
 function detectBrowserLanguage() {
   const browserLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
   
@@ -125,6 +153,7 @@ function detectBrowserLanguage() {
   return 'en';
 }
 
+// --- Restore Settings ---
 function loadState() {
   state.lang = detectBrowserLanguage();
 
@@ -147,6 +176,7 @@ function loadState() {
   if (params.has('lang')) state.lang = params.get('lang');
 }
 
+// --- Save Settings and Sync URL ---
 function saveAndSync() {
   localStorage.setItem('pns_gather_calc_settings', JSON.stringify(state));
 
@@ -163,6 +193,103 @@ function saveAndSync() {
   document.getElementById('shareUrlInput').value = newUrl;
 }
 
+// --- Preset Management Logic ---
+function loadPresets() {
+  const savedPresets = localStorage.getItem('pns_gather_calc_presets');
+  if (savedPresets) {
+    try {
+      presets = JSON.parse(savedPresets);
+    } catch (e) {
+      console.error('Failed to parse saved presets:', e);
+      presets = {};
+    }
+  }
+}
+
+function savePresetsToStorage() {
+  localStorage.setItem('pns_gather_calc_presets', JSON.stringify(presets));
+}
+
+function renderPresetOptions(selectedName = '') {
+  const selectElem = document.getElementById('presetSelect');
+  const dict = (typeof I18N !== 'undefined' && I18N[state.lang]) ? I18N[state.lang] : (I18N ? I18N.en : {});
+
+  selectElem.innerHTML = '';
+
+  const defaultOption = document.createElement('option');
+  defaultOption.value = '';
+  defaultOption.innerText = dict.selectPresetDefault || '-- Select Preset --';
+  selectElem.appendChild(defaultOption);
+
+  Object.keys(presets).forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.innerText = name;
+    if (name === selectedName) opt.selected = true;
+    selectElem.appendChild(opt);
+  });
+}
+
+function saveCurrentAsPreset() {
+  const nameInput = document.getElementById('presetNameInput');
+  const name = nameInput.value.trim();
+  const dict = (typeof I18N !== 'undefined' && I18N[state.lang]) ? I18N[state.lang] : (I18N ? I18N.en : {});
+
+  if (!name) return;
+
+  presets[name] = {
+    globalBuff: state.globalBuff,
+    foodSpeed: state.foodSpeed,
+    woodSpeed: state.woodSpeed,
+    steelSpeed: state.steelSpeed,
+    gasSpeed: state.gasSpeed,
+    showSeconds: state.showSeconds
+  };
+
+  savePresetsToStorage();
+  renderPresetOptions(name);
+  nameInput.value = '';
+  if (dict.presetSaved) alert(dict.presetSaved);
+}
+
+function deleteSelectedPreset() {
+  const selectElem = document.getElementById('presetSelect');
+  const name = selectElem.value;
+  const dict = (typeof I18N !== 'undefined' && I18N[state.lang]) ? I18N[state.lang] : (I18N ? I18N.en : {});
+
+  if (!name || !presets[name]) return;
+
+  delete presets[name];
+  savePresetsToStorage();
+  renderPresetOptions('');
+  if (dict.presetDeleted) alert(dict.presetDeleted);
+}
+
+function applyPreset(name) {
+  if (!name || !presets[name]) return;
+
+  const data = presets[name];
+  state.globalBuff = data.globalBuff;
+  state.foodSpeed = data.foodSpeed;
+  state.woodSpeed = data.woodSpeed;
+  state.steelSpeed = data.steelSpeed;
+  state.gasSpeed = data.gasSpeed;
+  if (data.showSeconds !== undefined) state.showSeconds = data.showSeconds;
+
+  document.getElementById('globalBuff').value = state.globalBuff;
+  document.getElementById('showSecondsCheck').checked = state.showSeconds;
+
+  RESOURCE_TYPES.forEach(res => {
+    const input = document.querySelector(`input[data-res-key="${res.key}"]`);
+    if (input) input.value = state[`${res.key}Speed`];
+  });
+
+  applySecondsClass();
+  saveAndSync();
+  recalculate();
+}
+
+// --- Time Calculation Logic ---
 function calculateSeconds(baseAmount, globalBuff, specificBuff) {
   const totalBuff = globalBuff + specificBuff;
   const speedFactor = 2160 * ((120 + totalBuff) / 100);
@@ -182,6 +309,16 @@ function formatTime(totalSeconds, showSeconds) {
   return `${pad(h)}:${pad(m)}`;
 }
 
+// --- Body Class Sync for Column Widths ---
+function applySecondsClass() {
+  if (state.showSeconds) {
+    document.body.classList.add('show-seconds');
+  } else {
+    document.body.classList.remove('show-seconds');
+  }
+}
+
+// --- On-Demand Safe Help Image Loading ---
 function openHelpModal() {
   const imgElem = document.getElementById('helpImage');
   const primarySrc = `img/help/${state.lang}.png`;
@@ -193,10 +330,10 @@ function openHelpModal() {
   };
 
   imgElem.src = primarySrc;
-
   document.getElementById('helpModal').classList.add('active');
 }
 
+// --- UI Language Update ---
 function updateLanguage() {
   const lang = state.lang;
   const dict = (typeof I18N !== 'undefined' && I18N[lang]) ? I18N[lang] : (I18N ? I18N.en : {});
@@ -204,6 +341,8 @@ function updateLanguage() {
   if (!dict) return;
 
   document.getElementById('ui-title').innerText = dict.title || '';
+  document.getElementById('ui-overallSpeedHeader').innerText = dict.overallSpeed || '';
+  document.getElementById('ui-resourceSpeedHeader').innerText = dict.resourceSpeed || '';
   document.getElementById('ui-globalBuffLabel').innerText = dict.globalBuff || '';
   document.getElementById('ui-showSecondsLabel').innerText = dict.showSeconds || '';
   document.getElementById('ui-thResource').innerText = dict.resource || '';
@@ -213,12 +352,20 @@ function updateLanguage() {
   document.getElementById('ui-helpBtnText').innerText = dict.helpBtn || '';
   document.getElementById('closeModalBtn').innerText = dict.closeBtn || '';
 
+  document.getElementById('ui-presetLabel').innerText = dict.presetLabel || 'Preset:';
+  document.getElementById('presetNameInput').placeholder = dict.presetPlaceholder || 'Name';
+  document.getElementById('savePresetBtn').innerText = dict.savePreset || 'Save';
+  document.getElementById('deletePresetBtn').innerText = dict.deletePreset || 'Delete';
+
   RESOURCE_TYPES.forEach(res => {
     const labelElem = document.getElementById(`label-text-${res.key}`);
     if (labelElem) labelElem.innerText = dict[res.key] || res.key;
   });
+
+  renderPresetOptions(document.getElementById('presetSelect').value);
 }
 
+// --- Render Table ---
 function renderTable() {
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = '';
@@ -253,6 +400,7 @@ function renderTable() {
     const input = document.createElement('input');
     input.type = 'number';
     input.className = 'number-input';
+    input.setAttribute('data-res-key', res.key);
     input.step = '0.1';
     input.min = '0';
     input.max = '500';
@@ -294,8 +442,11 @@ function recalculate() {
   });
 }
 
+// --- Initialization ---
 function init() {
   loadState();
+  loadPresets();
+  applySecondsClass();
 
   const langSelect = document.getElementById('langSelect');
   langSelect.value = state.lang;
@@ -317,15 +468,23 @@ function init() {
   showSecondsCheck.checked = state.showSeconds;
   showSecondsCheck.addEventListener('change', (e) => {
     state.showSeconds = e.target.checked;
+    applySecondsClass();
     saveAndSync();
     recalculate();
   });
+
+  document.getElementById('presetSelect').addEventListener('change', (e) => {
+    applyPreset(e.target.value);
+  });
+
+  document.getElementById('savePresetBtn').addEventListener('click', saveCurrentAsPreset);
+  document.getElementById('deletePresetBtn').addEventListener('click', deleteSelectedPreset);
 
   document.getElementById('copyBtn').addEventListener('click', () => {
     const urlInput = document.getElementById('shareUrlInput');
     urlInput.select();
     navigator.clipboard.writeText(urlInput.value).then(() => {
-      const dict = (typeof I18N !== 'undefined' && I18N[state.lang]) ? I18N[state.lang] : I18N.ja;
+      const dict = (typeof I18N !== 'undefined' && I18N[state.lang]) ? I18N[state.lang] : I18N.en;
       alert(dict.copied);
     });
   });
@@ -345,6 +504,7 @@ function init() {
 
   renderTable();
   updateLanguage();
+  renderPresetOptions();
   saveAndSync();
   recalculate();
 }
