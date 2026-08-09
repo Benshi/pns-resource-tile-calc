@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PNS Resource Tile Calculator</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --card: #ffffff;
+      --line: #d9dde3;
+      --text: #1f2937;
+      --header: #eef2f7;
+      --sticky1: #fdfefe;
+      --sticky2: #f6f9fc;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 12px;
+    }
+
+    .lang-select {
+      min-width: 170px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .controls {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 15px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 900px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: center;
+      white-space: nowrap;
+      font-size: 14px;
+    }
+
+    thead th {
+      background: var(--header);
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+      z-index: 3;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    th.sticky-col-1, td.sticky-col-1 {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      background: var(--sticky1);
+      text-align: left;
+      min-width: 150px;
+    }
+
+    th.sticky-col-2, td.sticky-col-2 {
+      position: sticky;
+      left: 150px;
+      z-index: 2;
+      background: var(--sticky2);
+      min-width: 150px;
+    }
+
+    thead th.sticky-col-1,
+    thead th.sticky-col-2 {
+      z-index: 4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar">
+      <select id="language" class="lang-select" aria-label="Language"></select>
+    </div>
+
+    <section class="panel">
+      <div class="controls">
+        <div>
+          <label for="globalBuff" data-i18n="globalBuff"></label>
+          <input id="globalBuff" type="number" inputmode="decimal" min="0" max="300" step="0.1" value="0" />
+        </div>
+        <div>
+          <label for="foodBuff" data-i18n="foodBuff"></label>
+          <input id="foodBuff" type="number" inputmode="decimal" min="0" max="500" step="0.1" value="0" />
+        </div>
+        <div>
+          <label for="woodBuff" data-i18n="woodBuff"></label>
+          <input id="woodBuff" type="number" inputmode="decimal" min="0" max="500" step="0.1" value="0" />
+        </div>
+        <div>
+          <label for="steelBuff" data-i18n="steelBuff"></label>
+          <input id="steelBuff" type="number" inputmode="decimal" min="0" max="500" step="0.1" value="0" />
+        </div>
+        <div>
+          <label for="gasBuff" data-i18n="gasBuff"></label>
+          <input id="gasBuff" type="number" inputmode="decimal" min="0" max="500" step="0.1" value="0" />
+        </div>
+      </div>
+    </section>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="sticky-col-1" data-i18n="resource"></th>
+            <th class="sticky-col-2" data-i18n="specificSpeed"></th>
+            <th>Lv1</th>
+            <th>Lv2</th>
+            <th>Lv3</th>
+            <th>Lv4</th>
+            <th>Lv5</th>
+            <th>Lv6</th>
+            <th>Lv7</th>
+          </tr>
+        </thead>
+        <tbody id="resultBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'pns_resource_tile_calc';
+    const LEVEL_BASES = [1000, 2000, 4000, 6750, 10000, 14000, 20000];
+
+    const RESOURCES = [
+      { key: 'food', ratio: 20, buffId: 'foodBuff' },
+      { key: 'wood', ratio: 20, buffId: 'woodBuff' },
+      { key: 'steel', ratio: 4, buffId: 'steelBuff' },
+      { key: 'gas', ratio: 1, buffId: 'gasBuff' }
+    ];
+
+    const I18N = {
+      ja: {
+        language: '日本語',
+        globalBuff: '全体採集速度バフ（0-300%）',
+        foodBuff: '食料採集速度バフ（0-500%）',
+        woodBuff: '木材採集速度バフ（0-500%）',
+        steelBuff: '鋼材採集速度バフ（0-500%）',
+        gasBuff: 'ガス採集速度バフ（0-500%）',
+        resource: '資源',
+        specificSpeed: '個別速度',
+        food: '食料',
+        wood: '木材',
+        steel: '鋼材',
+        gas: 'ガス'
+      },
+      en: {
+        language: 'English',
+        globalBuff: 'Global Gathering Speed Buff (0-300%)',
+        foodBuff: 'Food Gathering Speed Buff (0-500%)',
+        woodBuff: 'Wood Gathering Speed Buff (0-500%)',
+        steelBuff: 'Steel Gathering Speed Buff (0-500%)',
+        gasBuff: 'Gas Gathering Speed Buff (0-500%)',
+        resource: 'Resource',
+        specificSpeed: 'Specific Speed',
+        food: 'Food',
+        wood: 'Wood',
+        steel: 'Steel',
+        gas: 'Gas'
+      },
+      zhHant: {
+        language: '繁體中文',
+        globalBuff: '全域採集速度加成（0-300%）',
+        foodBuff: '食物採集速度加成（0-500%）',
+        woodBuff: '木材採集速度加成（0-500%）',
+        steelBuff: '鋼材採集速度加成（0-500%）',
+        gasBuff: '瓦斯採集速度加成（0-500%）',
+        resource: '資源',
+        specificSpeed: '單項速度',
+        food: '食物',
+        wood: '木材',
+        steel: '鋼材',
+        gas: '瓦斯'
+      },
+      zhHans: {
+        language: '简体中文',
+        globalBuff: '全局采集速度加成（0-300%）',
+        foodBuff: '食物采集速度加成（0-500%）',
+        woodBuff: '木材采集速度加成（0-500%）',
+        steelBuff: '钢材采集速度加成（0-500%）',
+        gasBuff: '天然气采集速度加成（0-500%）',
+        resource: '资源',
+        specificSpeed: '单项速度',
+        food: '食物',
+        wood: '木材',
+        steel: '钢材',
+        gas: '天然气'
+      }
+    };
+
+    const inputIds = ['globalBuff', 'foodBuff', 'woodBuff', 'steelBuff', 'gasBuff'];
+
+    function clampNumber(value, min, max) {
+      if (!Number.isFinite(value)) return 0;
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function getNumericInput(id) {
+      const el = document.getElementById(id);
+      const max = Number(el.max);
+      const min = Number(el.min);
+      return clampNumber(Number(el.value), min, max);
+    }
+
+    function formatHms(totalSeconds) {
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function calcSeconds(baseAmount, globalBuff, specificBuff) {
+      const totalBuff = globalBuff + specificBuff;
+      const seconds = (baseAmount / (2160 * (120 + totalBuff) / 100)) * 3600;
+      return Math.ceil(seconds);
+    }
+
+    function getState() {
+      return {
+        language: document.getElementById('language').value,
+        globalBuff: getNumericInput('globalBuff'),
+        foodBuff: getNumericInput('foodBuff'),
+        woodBuff: getNumericInput('woodBuff'),
+        steelBuff: getNumericInput('steelBuff'),
+        gasBuff: getNumericInput('gasBuff')
+      };
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(getState()));
+    }
+
+    function renderLanguageOptions(selected) {
+      const select = document.getElementById('language');
+      select.innerHTML = '';
+      Object.entries(I18N).forEach(([key, val]) => {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = val.language;
+        if (key === selected) option.selected = true;
+        select.appendChild(option);
+      });
+    }
+
+    function applyTranslations() {
+      const lang = document.getElementById('language').value;
+      const dict = I18N[lang] || I18N.en;
+      document.documentElement.lang = lang === 'ja' ? 'ja' : (lang === 'zhHant' ? 'zh-Hant' : (lang === 'zhHans' ? 'zh-Hans' : 'en'));
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) el.textContent = dict[key];
+      });
+    }
+
+    function renderTable() {
+      const lang = document.getElementById('language').value;
+      const dict = I18N[lang] || I18N.en;
+      const globalBuff = getNumericInput('globalBuff');
+      const tbody = document.getElementById('resultBody');
+      tbody.innerHTML = '';
+
+      RESOURCES.forEach((resource) => {
+        const specificBuff = getNumericInput(resource.buffId);
+        const tr = document.createElement('tr');
+
+        const nameTd = document.createElement('td');
+        nameTd.className = 'sticky-col-1';
+        nameTd.textContent = dict[resource.key];
+        tr.appendChild(nameTd);
+
+        const buffTd = document.createElement('td');
+        buffTd.className = 'sticky-col-2';
+        buffTd.textContent = `${specificBuff}%`;
+        tr.appendChild(buffTd);
+
+        LEVEL_BASES.forEach((levelBase) => {
+          const baseAmount = levelBase * resource.ratio;
+          const seconds = calcSeconds(baseAmount, globalBuff, specificBuff);
+          const td = document.createElement('td');
+          td.textContent = formatHms(seconds);
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function loadState() {
+      const fallback = {
+        language: 'ja',
+        globalBuff: 0,
+        foodBuff: 0,
+        woodBuff: 0,
+        steelBuff: 0,
+        gasBuff: 0
+      };
+
+      try {
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        return { ...fallback, ...parsed };
+      } catch (_e) {
+        return fallback;
+      }
+    }
+
+    function initialize() {
+      const state = loadState();
+      const language = I18N[state.language] ? state.language : 'ja';
+      renderLanguageOptions(language);
+
+      inputIds.forEach((id) => {
+        const input = document.getElementById(id);
+        input.value = state[id] ?? 0;
+        input.addEventListener('input', () => {
+          const clamped = getNumericInput(id);
+          if (!Number.isNaN(clamped)) input.value = clamped;
+          renderTable();
+          saveState();
+        });
+      });
+
+      document.getElementById('language').addEventListener('change', () => {
+        applyTranslations();
+        renderTable();
+        saveState();
+      });
+
+      applyTranslations();
+      renderTable();
+      saveState();
+    }
+
+    initialize();
+  </script>
+</body>
+</html>
