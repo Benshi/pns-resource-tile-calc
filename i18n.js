@@ -22,7 +22,13 @@ const I18N = {
     presetSaved: 'プリセットを保存しました。',
     presetDeleted: 'プリセットを削除しました。',
     overallSpeed: '全体速度',
-    resourceSpeed: '資源別速度'
+    resourceSpeed: '資源別速度',
+    levelMode: 'レベル別',
+    capacityMode: '収穫量別',
+    capacityInterval: '単位時間:',
+    minutes: '分',
+    hour: '1時間',
+    helpTitle: '採集速度の確認方法'
   },
   en: {
     title: 'Gathering Time Calculator',
@@ -47,7 +53,13 @@ const I18N = {
     presetSaved: 'Preset saved.',
     presetDeleted: 'Preset deleted.',
     overallSpeed: 'Overall Speed',
-    resourceSpeed: 'Resource Speed'
+    resourceSpeed: 'Resource Speed',
+    levelMode: 'By Level',
+    capacityMode: 'By Capacity',
+    capacityInterval: 'Interval:',
+    minutes: 'min',
+    hour: '1 hour',
+    helpTitle: 'How to check gathering speed'
   },
   'zh-TW': {
     title: '資源採集時間計算器',
@@ -72,7 +84,13 @@ const I18N = {
     presetSaved: '預設已儲存。',
     presetDeleted: '預設已刪除。',
     overallSpeed: '整體速度',
-    resourceSpeed: '資源速度'
+    resourceSpeed: '資源速度',
+    levelMode: '依等級',
+    capacityMode: '依收穫量',
+    capacityInterval: '時間間隔:',
+    minutes: '分鐘',
+    hour: '1小時',
+    helpTitle: '如何確認採集速度'
   },
   'zh-CN': {
     title: '资源采集时间计算器',
@@ -97,7 +115,13 @@ const I18N = {
     presetSaved: '预设已保存。',
     presetDeleted: '预设已删除。',
     overallSpeed: '整体速度',
-    resourceSpeed: '资源速度'
+    resourceSpeed: '资源速度',
+    levelMode: '按等级',
+    capacityMode: '按收获量',
+    capacityInterval: '时间间隔:',
+    minutes: '分钟',
+    hour: '1小时',
+    helpTitle: '如何确认采集速度'
   },
   ko: {
     title: '자원 채집 시간 계산기',
@@ -122,7 +146,13 @@ const I18N = {
     presetSaved: '프리셋이 저장되었습니다.',
     presetDeleted: '프리셋이 삭제되었습니다.',
     overallSpeed: '전체 속도',
-    resourceSpeed: '자원별 속도'
+    resourceSpeed: '자원별 속도',
+    levelMode: '레벨별',
+    capacityMode: '수확량별',
+    capacityInterval: '시간 단위:',
+    minutes: '분',
+    hour: '1시간',
+    helpTitle: '채집 속도 확인 방법'
   },
   ru: {
     title: 'Калькулятор времени сбора',
@@ -147,6 +177,12 @@ const I18N = {
     presetSaved: 'Пресет сохранен.',
     presetDeleted: 'Пресет удален.',
     overallSpeed: 'Общая скорость',
-    resourceSpeed: 'Скорость по ресурсам'
+    resourceSpeed: 'Скорость по ресурсам',
+    levelMode: 'По уровню',
+    capacityMode: 'По объему',
+    capacityInterval: 'Интервал:',
+    minutes: 'мин',
+    hour: '1 час',
+    helpTitle: 'Как проверить скорость сбора'
   }
 };
