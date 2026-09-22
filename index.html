@@ -43,10 +43,16 @@
           <button type="button" class="mode-button is-active" data-mode="level">レベル別</button>
           <button type="button" class="mode-button" data-mode="capacity">収穫量別</button>
         </div>
-        <button type="button" id="helpBtn" class="help-button" aria-label="バフの確認方法">
-          <span aria-hidden="true">?</span>
-          <span id="ui-helpBtnText">バフの確認方法</span>
-        </button>
+        <div class="buff-actions">
+          <button type="button" id="helpBtn" class="help-button" aria-label="バフの確認方法">
+            <span aria-hidden="true">?</span>
+            <span id="ui-helpBtnText">バフの確認方法</span>
+          </button>
+          <button type="button" id="toggleBuffSettingsBtn" class="buff-toggle-button">
+            <span aria-hidden="true">⚙</span>
+            <span id="ui-toggleBuffSettingsText">バフ設定を隠す</span>
+          </button>
+        </div>
         <div class="level-options" id="levelOptions">
           <label class="checkbox-control">
             <input type="checkbox" id="showSecondsCheck">
