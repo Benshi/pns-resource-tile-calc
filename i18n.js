@@ -28,7 +28,9 @@ const I18N = {
     capacityInterval: '単位時間:',
     minutes: '分',
     hour: '1時間',
-    helpTitle: '採集速度の確認方法'
+    helpTitle: '採集速度の確認方法',
+    hideBuffSettings: 'バフ設定を隠す',
+    showBuffSettings: 'バフ設定を表示'
   },
   en: {
     title: 'Gathering Time Calculator',
@@ -59,7 +61,9 @@ const I18N = {
     capacityInterval: 'Interval:',
     minutes: 'min',
     hour: '1 hour',
-    helpTitle: 'How to check gathering speed'
+    helpTitle: 'How to check gathering speed',
+    hideBuffSettings: 'Hide buffs',
+    showBuffSettings: 'Show buffs'
   },
   'zh-TW': {
     title: '資源採集時間計算器',
@@ -90,7 +94,9 @@ const I18N = {
     capacityInterval: '時間間隔:',
     minutes: '分鐘',
     hour: '1小時',
-    helpTitle: '如何確認採集速度'
+    helpTitle: '如何確認採集速度',
+    hideBuffSettings: '隱藏加成設定',
+    showBuffSettings: '顯示加成設定'
   },
   'zh-CN': {
     title: '资源采集时间计算器',
@@ -121,7 +127,9 @@ const I18N = {
     capacityInterval: '时间间隔:',
     minutes: '分钟',
     hour: '1小时',
-    helpTitle: '如何确认采集速度'
+    helpTitle: '如何确认采集速度',
+    hideBuffSettings: '隐藏加成设置',
+    showBuffSettings: '显示加成设置'
   },
   ko: {
     title: '자원 채집 시간 계산기',
@@ -152,7 +160,9 @@ const I18N = {
     capacityInterval: '시간 단위:',
     minutes: '분',
     hour: '1시간',
-    helpTitle: '채집 속도 확인 방법'
+    helpTitle: '채집 속도 확인 방법',
+    hideBuffSettings: '버프 설정 숨기기',
+    showBuffSettings: '버프 설정 표시'
   },
   ru: {
     title: 'Калькулятор времени сбора',
@@ -183,6 +193,8 @@ const I18N = {
     capacityInterval: 'Интервал:',
     minutes: 'мин',
     hour: '1 час',
-    helpTitle: 'Как проверить скорость сбора'
+    helpTitle: 'Как проверить скорость сбора',
+    hideBuffSettings: 'Скрыть настройки',
+    showBuffSettings: 'Показать настройки'
   }
 };

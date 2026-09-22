@@ -23,7 +23,7 @@ const JAPANESE = {
 };
 
 const DEFAULT_SETTINGS = {
-  lang: 'ja', mode: 'level', showSeconds: false, showLevel8: false, capacityInterval: 30,
+  lang: 'ja', mode: 'level', showSeconds: false, showLevel8: false, showBuffSettings: true, capacityInterval: 15,
   globalBuff: 0, foodSpeed: 0, woodSpeed: 0, steelSpeed: 0, gasSpeed: 0
 };
 
@@ -146,14 +146,16 @@ function renderTable() {
   const table = document.getElementById('calculatorTable');
   table.classList.toggle('is-capacity-mode', state.mode === 'capacity');
   table.classList.toggle('is-compact-time-mode', state.mode === 'level' && !state.showSeconds);
+  table.classList.toggle('is-buff-settings-hidden', !state.showBuffSettings);
+  table.classList.toggle('is-hourly-capacity-mode', state.mode === 'capacity' && state.capacityInterval === 60);
   const tableHead = document.getElementById('tableHead');
   const tableBody = document.getElementById('tableBody');
   tableHead.innerHTML = `<tr>
     <th class="resource-column">${dict.resource}</th>
-    <th class="speed-column global-speed-cell">
+    ${state.showBuffSettings ? `<th class="speed-column global-speed-cell">
       <label class="global-speed-label" for="globalBuff" id="ui-globalBuffLabel">${dict.globalBuff}</label>
       <span class="speed-input-row"><input class="global-speed-input" type="number" id="globalBuff" min="0" max="999.9" step="0.1" inputmode="decimal" value="${state.globalBuff}"><span class="unit">%</span></span>
-    </th>
+    </th>` : ''}
     ${columns.map((column) => state.mode === 'level'
       ? `<th class="level-header">${column.label}<span class="level-header-bar level-band-${column.value}"></span></th>`
       : `<th>${column.label}</th>`
@@ -175,7 +177,7 @@ function renderTable() {
       <td class="resource-column">
         <span class="resource-label"><img class="resource-icon" src="img/icon/${resource.key}.png" alt=""><span>${dict[resource.key]}</span></span>
       </td>
-      <td class="speed-column"><input class="resource-speed" type="number" min="0" max="999.9" step="0.1" inputmode="decimal" data-resource="${resource.key}" value="${state[`${resource.key}Speed`]}"><span class="unit">%</span></td>
+      ${state.showBuffSettings ? `<td class="speed-column"><input class="resource-speed" type="number" min="0" max="999.9" step="0.1" inputmode="decimal" data-resource="${resource.key}" value="${state[`${resource.key}Speed`]}"><span class="unit">%</span></td>` : ''}
       ${cells}
     </tr>`;
   }).join('');
@@ -187,11 +189,14 @@ function renderTable() {
       updateTableValues();
     });
   });
-  document.getElementById('globalBuff').addEventListener('input', (event) => {
-    state.globalBuff = parseNumber(event.target.value);
-    persistAndSync();
-    updateTableValues();
-  });
+  const globalBuff = document.getElementById('globalBuff');
+  if (globalBuff) {
+    globalBuff.addEventListener('input', (event) => {
+      state.globalBuff = parseNumber(event.target.value);
+      persistAndSync();
+      updateTableValues();
+    });
+  }
   document.querySelectorAll('.time-cell').forEach((cell) => {
     cell.addEventListener('click', () => {
       const wasOpen = cell.classList.contains('is-tooltip-open');
@@ -287,7 +292,8 @@ function updateLanguage() {
   document.getElementById('presetNameInput').placeholder = dict.presetPlaceholder;
   document.getElementById('savePresetBtn').textContent = dict.savePreset;
   document.getElementById('deletePresetBtn').textContent = dict.deletePreset;
-  document.getElementById('ui-globalBuffLabel').textContent = dict.globalBuff;
+  const globalBuffLabel = document.getElementById('ui-globalBuffLabel');
+  if (globalBuffLabel) globalBuffLabel.textContent = dict.globalBuff;
   document.getElementById('ui-showSecondsLabel').textContent = dict.showSeconds;
   document.getElementById('ui-showLevel8Label').textContent = dict.showLevel8;
   document.getElementById('ui-capacityIntervalLabel').textContent = dict.capacityInterval;
@@ -295,6 +301,9 @@ function updateLanguage() {
   document.getElementById('copyBtn').textContent = dict.copyBtn;
   document.getElementById('helpBtn').setAttribute('aria-label', dict.helpBtn);
   document.getElementById('ui-helpBtnText').textContent = dict.helpBtn;
+  document.getElementById('ui-toggleBuffSettingsText').textContent = state.showBuffSettings
+    ? dict.hideBuffSettings
+    : dict.showBuffSettings;
   document.getElementById('helpModalTitle').textContent = dict.helpTitle;
   document.getElementById('closeModalBtn').textContent = dict.closeBtn;
   document.querySelector('[data-mode="level"]').textContent = dict.levelMode;
@@ -405,6 +414,12 @@ function initialize() {
   document.getElementById('showLevel8Check').addEventListener('change', (event) => {
     state.showLevel8 = event.target.checked;
     persistAndSync();
+    renderTable();
+  });
+  document.getElementById('toggleBuffSettingsBtn').addEventListener('click', () => {
+    state.showBuffSettings = !state.showBuffSettings;
+    persistAndSync();
+    updateLanguage();
     renderTable();
   });
   document.querySelectorAll('.mode-button').forEach((button) => button.addEventListener('click', () => {
