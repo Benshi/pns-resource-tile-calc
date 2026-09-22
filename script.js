@@ -148,6 +148,7 @@ function renderTable() {
   table.classList.toggle('is-compact-time-mode', state.mode === 'level' && !state.showSeconds);
   table.classList.toggle('is-buff-settings-hidden', !state.showBuffSettings);
   table.classList.toggle('is-hourly-capacity-mode', state.mode === 'capacity' && state.capacityInterval === 60);
+  table.classList.toggle('is-expanded-level-mode', state.mode === 'level' && state.showLevel8);
   const tableHead = document.getElementById('tableHead');
   const tableBody = document.getElementById('tableBody');
   tableHead.innerHTML = `<tr>
