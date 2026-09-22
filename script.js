@@ -107,6 +107,30 @@ function formatCapacity(value) {
   return Math.floor(value).toLocaleString();
 }
 
+function capacityLevelSegments(resource, startAmount, endAmount) {
+  const levels = Object.keys(BASE_AMOUNTS).map(Number).sort((a, b) => a - b);
+  const intervalAmount = endAmount - startAmount;
+  let lowerBound = 0;
+
+  return levels.flatMap((level, index) => {
+    const upperBound = index === levels.length - 1
+      ? Number.POSITIVE_INFINITY
+      : BASE_AMOUNTS[level] * resource.ratio;
+    const coveredAmount = Math.max(0, Math.min(endAmount, upperBound) - Math.max(startAmount, lowerBound));
+    lowerBound = upperBound;
+    return coveredAmount > 0 ? [{ level, percentage: coveredAmount / intervalAmount * 100 }] : [];
+  });
+}
+
+function capacityCellContent(resource, seconds, previousSeconds) {
+  const rate = gatheringRate(resource);
+  const segments = capacityLevelSegments(resource, rate * previousSeconds, rate * seconds);
+  const bar = segments.map(({ level, percentage }) =>
+    `<span class="capacity-level-segment level-band-${level}" style="width:${percentage}%" title="Lv${level}"></span>`
+  ).join('');
+  return `<span class="capacity-value">${formatCapacity(rate * seconds)}</span><span class="capacity-level-bar" aria-label="${segments.map(({ level }) => `Lv${level}`).join(', ')}">${bar}</span>`;
+}
+
 function visibleColumns() {
   return state.mode === 'level'
     ? getLevels().map((level) => ({ id: `level-${level}`, label: `Lv${level}`, value: level }))
@@ -128,19 +152,23 @@ function renderTable() {
       <label class="global-speed-label" for="globalBuff" id="ui-globalBuffLabel">${dict.globalBuff}</label>
       <span class="speed-input-row"><input class="global-speed-input" type="number" id="globalBuff" min="0" max="9999" step="0.1" inputmode="decimal" value="${state.globalBuff}"><span class="unit">%</span></span>
     </th>
-    ${columns.map((column) => `<th>${column.label}</th>`).join('')}
+    ${columns.map((column) => state.mode === 'level'
+      ? `<th class="level-header">${column.label}<span class="level-header-bar level-band-${column.value}"></span></th>`
+      : `<th>${column.label}</th>`
+    ).join('')}
   </tr>`;
   tableBody.innerHTML = RESOURCE_TYPES.map((resource) => {
-    const cells = columns.map((column) => {
+    const cells = columns.map((column, index) => {
       const content = state.mode === 'level'
         ? formatTime(calculateTime(resource, column.value))
-        : formatCapacity(gatheringRate(resource) * column.value);
+        : capacityCellContent(resource, column.value, index === 0 ? 0 : columns[index - 1].value);
       const className = state.mode === 'capacity' ? 'capacity-cell' : 'time-cell';
       const tooltip = state.mode === 'level'
         ? ` data-tooltip="${dict[resource.key]} Lv${column.value}&#10;総資源数:${formatCapacity(BASE_AMOUNTS[column.value] * resource.ratio)}" tabindex="0"`
         : '';
       return `<td class="${className}" data-result="${resource.key}-${column.id}"${tooltip}>${content}</td>`;
     }).join('');
+    renderCapacityLegend();
     return `<tr>
       <td class="resource-column">
         <span class="resource-label"><img class="resource-icon" src="img/icon/${resource.key}.png" alt=""><span>${dict[resource.key]}</span></span>
@@ -182,9 +210,24 @@ function updateTableValues() {
       if (!cell) return;
       cell.textContent = state.mode === 'level'
         ? formatTime(calculateTime(resource, column.value))
-        : formatCapacity(gatheringRate(resource) * column.value);
+        : '';
+      if (state.mode === 'capacity') {
+        const columnIndex = visibleColumns().findIndex(({ id }) => id === column.id);
+        const previousSeconds = columnIndex === 0 ? 0 : visibleColumns()[columnIndex - 1].value;
+        cell.innerHTML = capacityCellContent(resource, column.value, previousSeconds);
+      }
     });
   });
+}
+
+function renderCapacityLegend() {
+  const legend = document.getElementById('capacityLegend');
+  const levels = state.mode === 'level'
+    ? getLevels().sort((a, b) => a - b)
+    : Object.keys(BASE_AMOUNTS).map(Number).sort((a, b) => a - b);
+  legend.innerHTML = levels
+    .map((level) => `<span class="capacity-legend-item"><span class="capacity-legend-swatch level-band-${level}"></span>Lv${level}</span>`)
+    .join('');
 }
 
 function renderPresetOptions(selectedName = '') {

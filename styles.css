@@ -210,6 +210,15 @@ table.is-capacity-mode { width: max-content; min-width: 1370px; table-layout: au
 table.is-capacity-mode th:not(.resource-column):not(.speed-column),
 table.is-capacity-mode td:not(.resource-column):not(.speed-column) { min-width: 92px; }
 thead th { background: #2b3037; color: #e8e5dd; font-size: .88rem; }
+.level-header { position: relative; padding-bottom: 13px; }
+.level-header-bar {
+  position: absolute;
+  right: 6px;
+  bottom: 4px;
+  left: 6px;
+  height: 4px;
+  border-radius: 3px;
+}
 th, td { height: 59px; padding: 6px 8px; text-align: center; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 tr:last-child td { border-bottom: 0; }
 th:last-child, td:last-child { border-right: 0; }
@@ -313,7 +322,42 @@ thead .resource-column, thead .speed-column { z-index: 3; text-align: center; }
 .resource-speed { width: 75px; padding: 7px; text-align: right; border-color: var(--purple); box-shadow: inset 0 0 0 1px rgba(139, 54, 197, .16); }
 .unit { color: var(--muted); font-size: .78rem; }
 .capacity-cell { color: #e2c19e; }
-table.is-capacity-mode .capacity-cell { text-align: right; padding-right: 12px; }
+table.is-capacity-mode .capacity-cell { position: relative; padding: 6px 12px 13px 8px; text-align: right; }
+.capacity-value { position: relative; z-index: 1; }
+.capacity-level-bar {
+  display: flex;
+  position: absolute;
+  right: 6px;
+  bottom: 4px;
+  left: 6px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #343941;
+}
+.capacity-level-segment { min-width: 1px; }
+.level-band-1 { background: #4a9be8; }
+.level-band-2 { background: #48bdd1; }
+.level-band-3 { background: #d8c451; }
+.level-band-4 { background: #e3bd54; }
+.level-band-5 { background: #df9250; }
+.level-band-6 { background: #db6871; }
+.level-band-7 { background: #dc779c; }
+.level-band-8 { background: #7c8ce4; }
+.level-band-9 { background: #5c9fd6; }
+.level-band-10 { background: #d58c4d; }
+.level-band-11 { background: #d45d68; }
+.level-band-12 { background: #cf8a9d; }
+.capacity-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: .72rem;
+}
+.capacity-legend-item { display: inline-flex; align-items: center; gap: 4px; }
+.capacity-legend-swatch { width: 14px; height: 4px; border-radius: 3px; }
 
 .share-container { margin-top: 12px; padding: 10px 0 0; border-top: 1px dashed var(--border-bright); }
 .share-title { display: block; margin-bottom: 6px; color: var(--muted); font-size: .82rem; font-weight: 700; }
