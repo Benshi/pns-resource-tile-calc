@@ -143,14 +143,16 @@ function visibleColumns() {
 function renderTable() {
   const dict = dictionary();
   const columns = visibleColumns();
-  document.getElementById('calculatorTable').classList.toggle('is-capacity-mode', state.mode === 'capacity');
+  const table = document.getElementById('calculatorTable');
+  table.classList.toggle('is-capacity-mode', state.mode === 'capacity');
+  table.classList.toggle('is-compact-time-mode', state.mode === 'level' && !state.showSeconds);
   const tableHead = document.getElementById('tableHead');
   const tableBody = document.getElementById('tableBody');
   tableHead.innerHTML = `<tr>
     <th class="resource-column">${dict.resource}</th>
     <th class="speed-column global-speed-cell">
       <label class="global-speed-label" for="globalBuff" id="ui-globalBuffLabel">${dict.globalBuff}</label>
-      <span class="speed-input-row"><input class="global-speed-input" type="number" id="globalBuff" min="0" max="9999" step="0.1" inputmode="decimal" value="${state.globalBuff}"><span class="unit">%</span></span>
+      <span class="speed-input-row"><input class="global-speed-input" type="number" id="globalBuff" min="0" max="999.9" step="0.1" inputmode="decimal" value="${state.globalBuff}"><span class="unit">%</span></span>
     </th>
     ${columns.map((column) => state.mode === 'level'
       ? `<th class="level-header">${column.label}<span class="level-header-bar level-band-${column.value}"></span></th>`
@@ -173,7 +175,7 @@ function renderTable() {
       <td class="resource-column">
         <span class="resource-label"><img class="resource-icon" src="img/icon/${resource.key}.png" alt=""><span>${dict[resource.key]}</span></span>
       </td>
-      <td class="speed-column"><input class="resource-speed" type="number" min="0" max="9999" step="0.1" inputmode="decimal" data-resource="${resource.key}" value="${state[`${resource.key}Speed`]}"><span class="unit">%</span></td>
+      <td class="speed-column"><input class="resource-speed" type="number" min="0" max="999.9" step="0.1" inputmode="decimal" data-resource="${resource.key}" value="${state[`${resource.key}Speed`]}"><span class="unit">%</span></td>
       ${cells}
     </tr>`;
   }).join('');

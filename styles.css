@@ -392,29 +392,58 @@ footer a:hover { color: #b7d8f4; text-decoration: underline; }
 }
 
 @media (max-width: 620px) {
-  .app-shell { width: min(100% - 12px, 1220px); margin: 6px auto; padding: 10px; border-radius: 8px; }
-  .app-header { gap: 8px; }
+  .app-shell { width: min(100% - 8px, 1220px); margin: 4px auto; padding: 8px; border-radius: 8px; }
+  .app-header { gap: 6px; }
+  h1 { font-size: 1.16rem; }
+  .language-picker select { width: 118px; padding: 5px 6px; }
   .preset-container { display: grid; grid-template-columns: auto 1fr; }
   .preset-container > label { width: auto; }
-  .preset-select { max-width: none; width: 100%; }
+  .preset-container { gap: 6px; padding: 6px; }
+  .preset-select { max-width: none; width: 100%; padding: 5px 6px; }
   .preset-actions { grid-column: 1 / -1; }
-  .preset-input { flex: 1; width: 0; }
-  .preset-actions .button { width: auto; }
-  .resource-panel-toolbar { gap: 8px; }
+  .preset-input { flex: 1; width: 0; padding: 5px 6px; }
+  .preset-actions { gap: 5px; }
+  .preset-actions .button { width: auto; padding: 5px 8px; }
+  .resource-panel-toolbar { gap: 6px; margin-bottom: 6px; }
   .mode-switch { flex: 0 0 216px; width: 216px; }
-  .mode-button { width: 108px; }
-  .resource-panel-toolbar .help-button { width: 136px; }
+  .mode-button { width: 108px; padding: 6px 8px; }
+  .resource-panel-toolbar .help-button { width: 128px; min-height: 40px; padding: 4px 6px; }
   .resource-panel-toolbar .level-options,
   .capacity-options { width: 100%; }
   .capacity-options { margin-left: 0; }
   .capacity-options > span { width: auto; }
-  .level-options { gap: 10px; }
+  .level-options { gap: 8px; }
+  .checkbox-control { font-size: .8rem; }
+  .checkbox-control input { width: 15px; height: 15px; }
   .mode-switch { order: -1; width: 100%; }
   .mode-button { flex: 1; }
-  .resource-panel { margin-top: 9px; padding: 8px; }
-  table { min-width: 760px; }
-  .resource-column { width: 128px; }
-  .speed-column { width: 102px; left: 128px; }
-  .resource-icon { width: 32px; height: 32px; }
-  th, td { height: 54px; padding: 5px; }
+  .resource-panel { margin-top: 8px; padding: 7px; }
+  .table-wrapper { padding-bottom: 12px; }
+  table { min-width: 650px; font-size: .84rem; }
+  table.is-compact-time-mode { min-width: 560px; }
+  table.is-capacity-mode { min-width: 1100px; }
+  table.is-capacity-mode th:not(.resource-column):not(.speed-column),
+  table.is-capacity-mode td:not(.resource-column):not(.speed-column) { min-width: 76px; }
+  .resource-column { width: 92px; }
+  .speed-column { width: 78px; left: 92px; }
+  table.is-capacity-mode .resource-column { min-width: 92px; max-width: 92px; }
+  table.is-capacity-mode .speed-column { min-width: 78px; max-width: 78px; }
+  .resource-label { gap: 4px; font-size: .76rem; }
+  .resource-icon { width: 29px; height: 29px; }
+  .global-speed-label { margin-bottom: 2px; font-size: .67rem; }
+  .global-speed-input, .resource-speed { width: 54px; padding: 5px 3px; }
+  .unit { font-size: .68rem; }
+  thead th { font-size: .8rem; }
+  th, td { height: 48px; padding: 4px 3px; }
+  td { font-size: .84rem; }
+  .level-header { padding-bottom: 10px; }
+  .level-header-bar { right: 4px; bottom: 3px; left: 4px; height: 3px; }
+  table.is-capacity-mode .capacity-cell { padding: 4px 7px 10px 3px; }
+  .capacity-level-bar { right: 4px; bottom: 3px; left: 4px; height: 3px; }
+  .capacity-legend { gap: 4px 8px; margin-top: 6px; font-size: .67rem; }
+  .share-container { margin-top: 9px; padding-top: 8px; }
+  .share-input-group { gap: 5px; }
+  .share-input-group input { padding: 6px; font-size: .76rem; }
+  .share-input-group .button { padding: 6px 8px; }
+  footer { margin-top: 8px; }
 }
