@@ -11,19 +11,19 @@ const CAPACITY_INTERVALS = [5, 10, 15, 30, 60];
 const STORAGE_KEY = 'pns_gather_calc_settings';
 const PRESET_STORAGE_KEY = 'pns_gather_calc_presets';
 const JAPANESE = {
-  title: '資源採取時間計算機', globalBuff: '資源採集速度:', showSeconds: '秒まで表示',
+  title: '採集時間算出ツール', globalBuff: '資源採集速度:', showSeconds: '秒まで表示',
   showLevel8: 'Lv8以上も表示', resource: '資源', speed: '速度', shareUrl: '共有 / 保存用 URL',
   copyBtn: 'コピー', copied: 'URLをクリップボードにコピーしました！', helpBtn: 'バフの確認方法',
   closeBtn: '閉じる', food: '食料', wood: '木材', steel: '鋼材', gas: 'ガス',
   presetLabel: 'プリセット:', presetPlaceholder: '名前 (アカウント名等)', savePreset: '保存',
   deletePreset: '削除', selectPresetDefault: '-- プリセット選択 --', presetSaved: 'プリセットを保存しました。',
-  presetDeleted: 'プリセットを削除しました。', levelMode: 'レベル別', capacityMode: '収穫量別',
+  presetDeleted: 'プリセットを削除しました。', levelMode: 'レベル別', capacityMode: '時間別',
   resourceSpeed: '資源別採集速度', helpTitle: '採集速度の確認方法', totalResources: '総資源量',
   capacityInterval: '単位時間:'
 };
 
 const DEFAULT_SETTINGS = {
-  lang: 'ja', mode: 'level', showSeconds: false, showLevel8: false, showBuffSettings: true, capacityInterval: 15,
+  lang: 'ja', mode: 'level', showSeconds: false, showLevel8: false, showBuffSettings: true, capacityInterval: 30,
   globalBuff: 0, foodSpeed: 0, woodSpeed: 0, steelSpeed: 0, gasSpeed: 0
 };
 
@@ -75,7 +75,7 @@ function parseCapacityInterval(value) {
 }
 
 function getLevels() {
-  return Object.keys(BASE_AMOUNTS).map(Number).sort((a, b) => b - a)
+  return Object.keys(BASE_AMOUNTS).map(Number).sort((a, b) => a - b)
     .filter((level) => state.showLevel8 || level < 8);
 }
 
@@ -148,6 +148,7 @@ function renderTable() {
   table.classList.toggle('is-compact-time-mode', state.mode === 'level' && !state.showSeconds);
   table.classList.toggle('is-buff-settings-hidden', !state.showBuffSettings);
   table.classList.toggle('is-hourly-capacity-mode', state.mode === 'capacity' && state.capacityInterval === 60);
+  table.classList.toggle('is-expanded-level-mode', state.mode === 'level' && state.showLevel8);
   const tableHead = document.getElementById('tableHead');
   const tableBody = document.getElementById('tableBody');
   tableHead.innerHTML = `<tr>
@@ -157,7 +158,7 @@ function renderTable() {
       <span class="speed-input-row"><input class="global-speed-input" type="number" id="globalBuff" min="0" max="999.9" step="0.1" inputmode="decimal" value="${state.globalBuff}"><span class="unit">%</span></span>
     </th>` : ''}
     ${columns.map((column) => state.mode === 'level'
-      ? `<th class="level-header">${column.label}<span class="level-header-bar level-band-${column.value}"></span></th>`
+      ? `<th class="level-header" data-level="${column.value}">${column.label}<span class="level-header-bar level-band-${column.value}"></span></th>`
       : `<th>${column.label}</th>`
     ).join('')}
   </tr>`;
@@ -235,6 +236,20 @@ function renderCapacityLegend() {
   legend.innerHTML = levels
     .map((level) => `<span class="capacity-legend-item"><span class="capacity-legend-swatch level-band-${level}"></span>Lv${level}</span>`)
     .join('');
+}
+
+function scrollToFrequentLevelRange() {
+  if (state.mode !== 'level') return;
+
+  requestAnimationFrame(() => {
+    const wrapper = document.getElementById('tableWrapper');
+    const levelSixHeader = document.querySelector('.level-header[data-level="6"]');
+    const stickyColumns = [...document.querySelectorAll('#calculatorTable thead .resource-column, #calculatorTable thead .speed-column')];
+    if (!levelSixHeader || wrapper.scrollWidth <= wrapper.clientWidth) return;
+
+    const stickyWidth = stickyColumns.reduce((total, column) => total + column.getBoundingClientRect().width, 0);
+    wrapper.scrollLeft = Math.max(0, levelSixHeader.offsetLeft - stickyWidth - 16);
+  });
 }
 
 function renderPresetOptions(selectedName = '') {
@@ -399,6 +414,7 @@ function initialize() {
   renderTable();
   updateLanguage();
   persistAndSync();
+  scrollToFrequentLevelRange();
 
   document.getElementById('langSelect').addEventListener('change', (event) => {
     state.lang = event.target.value;
@@ -427,6 +443,11 @@ function initialize() {
     synchronizeControls();
     persistAndSync();
     renderTable();
+    if (state.mode === 'level') {
+      scrollToFrequentLevelRange();
+    } else {
+      document.getElementById('tableWrapper').scrollLeft = 0;
+    }
   }));
   document.getElementById('presetSelect').addEventListener('change', (event) => applyPreset(event.target.value));
   document.getElementById('savePresetBtn').addEventListener('click', savePreset);

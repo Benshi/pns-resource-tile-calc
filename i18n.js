@@ -1,6 +1,6 @@
 const I18N = {
   ja: {
-    title: '資源採取時間計算機',
+    title: '採集時間算出ツール',
     globalBuff: '採集速度:',
     showSeconds: '秒まで表示',
     resource: '資源',
@@ -24,7 +24,7 @@ const I18N = {
     overallSpeed: '全体速度',
     resourceSpeed: '資源別速度',
     levelMode: 'レベル別',
-    capacityMode: '収穫量別',
+    capacityMode: '時間別',
     capacityInterval: '単位時間:',
     minutes: '分',
     hour: '1時間',
@@ -33,7 +33,7 @@ const I18N = {
     showBuffSettings: 'バフ設定を表示'
   },
   en: {
-    title: 'Gathering Time Calculator',
+    title: 'Gathering Time Calculator Tool',
     globalBuff: 'Gathering Speed:',
     showSeconds: 'Show Seconds',
     resource: 'Resource',
@@ -57,7 +57,7 @@ const I18N = {
     overallSpeed: 'Overall Speed',
     resourceSpeed: 'Resource Speed',
     levelMode: 'By Level',
-    capacityMode: 'By Capacity',
+    capacityMode: 'By Time',
     capacityInterval: 'Interval:',
     minutes: 'min',
     hour: '1 hour',
@@ -66,7 +66,7 @@ const I18N = {
     showBuffSettings: 'Show buffs'
   },
   'zh-TW': {
-    title: '資源採集時間計算器',
+    title: '採集時間計算工具',
     globalBuff: '採集速度:',
     showSeconds: '顯示秒數',
     resource: '資源',
@@ -90,7 +90,7 @@ const I18N = {
     overallSpeed: '整體速度',
     resourceSpeed: '資源速度',
     levelMode: '依等級',
-    capacityMode: '依收穫量',
+    capacityMode: '按時間',
     capacityInterval: '時間間隔:',
     minutes: '分鐘',
     hour: '1小時',
@@ -99,7 +99,7 @@ const I18N = {
     showBuffSettings: '顯示加成設定'
   },
   'zh-CN': {
-    title: '资源采集时间计算器',
+    title: '采集时间计算工具',
     globalBuff: '采集速度:',
     showSeconds: '显示秒数',
     resource: '资源',
@@ -123,7 +123,7 @@ const I18N = {
     overallSpeed: '整体速度',
     resourceSpeed: '资源速度',
     levelMode: '按等级',
-    capacityMode: '按收获量',
+    capacityMode: '按时间',
     capacityInterval: '时间间隔:',
     minutes: '分钟',
     hour: '1小时',
@@ -132,7 +132,7 @@ const I18N = {
     showBuffSettings: '显示加成设置'
   },
   ko: {
-    title: '자원 채집 시간 계산기',
+    title: '채집 시간 계산 툴',
     globalBuff: '채집 속도:',
     showSeconds: '초 표시',
     resource: '자원',
@@ -156,7 +156,7 @@ const I18N = {
     overallSpeed: '전체 속도',
     resourceSpeed: '자원별 속도',
     levelMode: '레벨별',
-    capacityMode: '수확량별',
+    capacityMode: '시간별',
     capacityInterval: '시간 단위:',
     minutes: '분',
     hour: '1시간',
@@ -165,7 +165,7 @@ const I18N = {
     showBuffSettings: '버프 설정 표시'
   },
   ru: {
-    title: 'Калькулятор времени сбора',
+    title: 'Инструмент расчета времени сбора',
     globalBuff: 'Скорость сбора:',
     showSeconds: 'Показывать секунды',
     resource: 'Ресурс',
@@ -189,7 +189,7 @@ const I18N = {
     overallSpeed: 'Общая скорость',
     resourceSpeed: 'Скорость по ресурсам',
     levelMode: 'По уровню',
-    capacityMode: 'По объему',
+    capacityMode: 'По времени',
     capacityInterval: 'Интервал:',
     minutes: 'мин',
     hour: '1 час',
