@@ -53,26 +53,26 @@
             <span id="ui-toggleBuffSettingsText">バフ設定を隠す</span>
           </button>
         </div>
-        <div class="level-options" id="levelOptions">
-          <label class="checkbox-control">
-            <input type="checkbox" id="showSecondsCheck">
-            <span id="ui-showSecondsLabel">秒まで表示</span>
-          </label>
-          <label class="checkbox-control">
+        <div class="view-options" id="viewOptions">
+          <label class="checkbox-control" id="showLevel8Control">
             <input type="checkbox" id="showLevel8Check">
             <span id="ui-showLevel8Label">Lv8以上も表示</span>
           </label>
+          <label class="checkbox-control" id="showSecondsControl">
+            <input type="checkbox" id="showSecondsCheck">
+            <span id="ui-showSecondsLabel">秒まで表示</span>
+          </label>
+          <label class="capacity-options is-hidden" id="capacityOptions" for="capacityInterval">
+            <span id="ui-capacityIntervalLabel">単位時間:</span>
+            <select id="capacityInterval">
+              <option value="5">5分</option>
+              <option value="10">10分</option>
+              <option value="15">15分</option>
+              <option value="30">30分</option>
+              <option value="60">1時間</option>
+            </select>
+          </label>
         </div>
-        <label class="capacity-options is-hidden" id="capacityOptions" for="capacityInterval">
-          <span id="ui-capacityIntervalLabel">単位時間:</span>
-          <select id="capacityInterval">
-            <option value="5">5分</option>
-            <option value="10">10分</option>
-            <option value="15">15分</option>
-            <option value="30">30分</option>
-            <option value="60">1時間</option>
-          </select>
-        </label>
       </div>
       <div class="table-wrapper" id="tableWrapper">
         <table id="calculatorTable">

@@ -268,9 +268,7 @@ function updateTableValues() {
 function renderCapacityLegend() {
   const legend = document.getElementById('capacityLegend');
   const dict = dictionary();
-  const levels = state.mode === 'level'
-    ? getLevels().sort((a, b) => a - b)
-    : Object.keys(BASE_AMOUNTS).map(Number).sort((a, b) => a - b);
+  const levels = getLevels();
   legend.innerHTML = levels
     .map((level) => `<button type="button" class="capacity-legend-item" data-legend-level="${level}" aria-label="${(state.mode === 'capacity' ? dict.jumpToLevel : dict.jumpToLevelColumn).replace('{level}', level)}"><span class="capacity-legend-swatch level-band-${level}"></span>Lv${level}</button>`)
     .join('');
@@ -443,7 +441,7 @@ function synchronizeControls() {
   document.getElementById('showSecondsCheck').checked = state.showSeconds;
   document.getElementById('showLevel8Check').checked = state.showLevel8;
   document.getElementById('capacityInterval').value = String(state.capacityInterval);
-  document.getElementById('levelOptions').classList.toggle('is-hidden', state.mode !== 'level');
+  document.getElementById('showSecondsControl').classList.toggle('is-hidden', state.mode !== 'level');
   document.getElementById('capacityOptions').classList.toggle('is-hidden', state.mode !== 'capacity');
   document.querySelectorAll('.mode-button').forEach((button) => {
     button.classList.toggle('is-active', button.dataset.mode === state.mode);
