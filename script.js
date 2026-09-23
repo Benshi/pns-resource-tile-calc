@@ -16,7 +16,6 @@ const BASE_HOURLY_RATE = 2160;
 // on top of the buff-based rate above. Levels not listed here (1-8, and any future unlisted level)
 // use the default multiplier of 1 (no bonus).
 const LEVEL_RATE_MULTIPLIERS = { 9: 1.2, 10: 1.4, 11: 1.7, 12: 2 };
-const MAX_CAPACITY_DURATION_SECONDS = 6 * 60 * 60;
 const CAPACITY_INTERVALS = [5, 10, 15, 30, 60];
 const STORAGE_KEY = 'pns_gather_calc_settings';
 const PRESET_STORAGE_KEY = 'pns_gather_calc_presets';
@@ -134,6 +133,29 @@ function maxVisibleLevel() {
   return Math.max(...getLevels());
 }
 
+// Total elapsed time needed to fill a tile from empty up to (and including) the given level's
+// capacity, walking through each level's own (possibly faster, Lv.9+) rate.
+function cumulativeTimeToLevel(resource, level) {
+  let time = 0;
+  let previousCapacity = 0;
+  for (const currentLevel of getLevels()) {
+    const levelCapacity = BASE_AMOUNTS[currentLevel] * resource.ratio;
+    time += (levelCapacity - previousCapacity) / gatheringRate(resource, currentLevel);
+    previousCapacity = levelCapacity;
+    if (currentLevel === level) break;
+  }
+  return time;
+}
+
+// Capacity mode's time axis stretches to cover the slowest resource's time to fill the max
+// visible level (Lv7, or Lv12 once "Lv8以上も表示" is checked), rounded up to a whole interval.
+function capacityDurationSeconds() {
+  const maxLevel = maxVisibleLevel();
+  const neededSeconds = Math.max(...RESOURCE_TYPES.map((resource) => cumulativeTimeToLevel(resource, maxLevel)));
+  const intervalSeconds = state.capacityInterval * 60;
+  return Math.ceil(neededSeconds / intervalSeconds) * intervalSeconds;
+}
+
 // Simulates a single tile that starts empty and automatically gathers faster once its
 // accumulated amount crosses each level's capacity threshold (the level's own gathering
 // speed, including its rate multiplier, applies to the segment leading up to that level).
@@ -192,7 +214,7 @@ function visibleColumns() {
   return state.mode === 'level'
     ? getLevels().map((level) => ({ id: `level-${level}`, label: `Lv${level}`, value: level }))
     : Array.from(
-      { length: MAX_CAPACITY_DURATION_SECONDS / (state.capacityInterval * 60) },
+      { length: capacityDurationSeconds() / (state.capacityInterval * 60) },
       (_, index) => (index + 1) * state.capacityInterval * 60
     ).map((seconds) => ({ id: `duration-${seconds}`, label: formatDuration(seconds), value: seconds }));
 }
@@ -235,7 +257,7 @@ function renderTable() {
       return `<td class="${className}" data-result="${resource.key}-${column.id}"${state.mode === 'level' ? ` data-tooltip="${tooltip}" data-rate="${rate}" tabindex="-1"` : ''}><span class="time-value">${content}</span>${tooltipMarkup}</td>`;
     }).join('');
     renderCapacityLegend();
-    return `<tr>
+    return `<tr data-resource-row="${resource.key}">
       <td class="resource-column">
         <span class="resource-label"><img class="resource-icon" src="img/icon/${resource.key}.png" alt=""><span>${dict[resource.key]}</span></span>
       </td>
@@ -272,7 +294,50 @@ function renderTable() {
   });
 }
 
+// Capacity mode's column count depends on the current buffs (via capacityDurationSeconds), so
+// buff edits must add/remove trailing time columns to stay in sync. This patches the DOM directly
+// (rather than a full renderTable()) so the buff/speed <input> being typed into keeps its focus.
+function reconcileCapacityColumns() {
+  const columns = visibleColumns();
+  const columnIds = columns.map((column) => column.id);
+  const headRow = document.querySelector('#tableHead tr');
+  const existingHeaders = [...headRow.querySelectorAll('th[data-column-id]')];
+  const existingIds = new Set(existingHeaders.map((th) => th.dataset.columnId));
+
+  existingHeaders.forEach((th) => {
+    if (!columnIds.includes(th.dataset.columnId)) th.remove();
+  });
+  document.querySelectorAll('#tableBody tr[data-resource-row]').forEach((row) => {
+    row.querySelectorAll('td.capacity-cell').forEach((cell) => {
+      const columnId = cell.dataset.result.slice(row.dataset.resourceRow.length + 1);
+      if (!columnIds.includes(columnId)) cell.remove();
+    });
+  });
+
+  columns.forEach((column) => {
+    if (!existingIds.has(column.id)) {
+      const th = document.createElement('th');
+      th.dataset.columnId = column.id;
+      th.textContent = column.label;
+      headRow.appendChild(th);
+    }
+  });
+  document.querySelectorAll('#tableBody tr[data-resource-row]').forEach((row) => {
+    columns.forEach((column) => {
+      const resultKey = `${row.dataset.resourceRow}-${column.id}`;
+      if (!row.querySelector(`[data-result="${resultKey}"]`)) {
+        const td = document.createElement('td');
+        td.className = 'capacity-cell';
+        td.dataset.result = resultKey;
+        td.innerHTML = '<span class="time-value"></span>';
+        row.appendChild(td);
+      }
+    });
+  });
+}
+
 function updateTableValues() {
+  if (state.mode === 'capacity') reconcileCapacityColumns();
   visibleColumns().forEach((column) => {
     RESOURCE_TYPES.forEach((resource) => {
       const cell = document.querySelector(`[data-result="${resource.key}-${column.id}"]`);

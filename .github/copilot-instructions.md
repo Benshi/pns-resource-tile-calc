@@ -60,8 +60,8 @@ This project (`pns-resource-tile-calc`) is a web-based gathering time calculator
 * **Smooth Layout Transitions**: Switching checkboxes or view modes MUST trigger smooth CSS transitions/animations (e.g., opacity, column width, or slide effects).
 
 ### Time-Based Mode (時間別モード)
-* In capacity mode, display time columns based on target duration steps:
-  * Intervals: **0:30, 1:00, 1:30, 2:00, 2:30, 3:00, ..., up to 6:00** (30-minute increments).
+* In capacity mode, display time columns at fixed steps of the selected interval (5/10/15/30/60 min), e.g. **0:30, 1:00, 1:30, 2:00, ...** for the 30-minute interval.
+* **Dynamic time axis end**: the last column is NOT a fixed duration. It extends to the time needed for the *slowest* resource to fill the currently max **visible** level's capacity (Lv.7 normally, or Lv.12 once "Lv8以上も表示" is checked), rounded up to the next whole interval. This recalculates live as buffs, the interval, or the Lv8+ toggle change.
 
 ---
 
