@@ -1,10 +1,8 @@
-// Note: `ratio` is retained for parity with the master data definition, but the gathering
-// rate/time formula intentionally does not use it (matches the officially observed values).
 const RESOURCE_TYPES = [
-  { key: 'food', ratio: 20 },
-  { key: 'wood', ratio: 20 },
-  { key: 'steel', ratio: 4 },
-  { key: 'gas', ratio: 1 }
+  { key: 'food', ratio: 20, hourlySpeed: 36000 },
+  { key: 'wood', ratio: 20, hourlySpeed: 28800 },
+  { key: 'steel', ratio: 4, hourlySpeed: 5760 },
+  { key: 'gas', ratio: 1, hourlySpeed: 1440 }
 ];
 
 const BASE_AMOUNTS = { 8: 26000, 7: 20000, 6: 14000, 5: 10000, 4: 6750, 3: 4000, 2: 2000, 1: 1000 };
@@ -89,12 +87,11 @@ function getLevels() {
 
 function gatheringRate(resource) {
   const totalSpeed = parseNumber(state.globalBuff) + parseNumber(state[`${resource.key}Speed`]);
-  const speedFactor = 2160 * ((120 + totalSpeed) / 100);
-  return speedFactor / 3600;
+  return resource.hourlySpeed * (1 + totalSpeed / 100) / 3600;
 }
 
 function calculateTime(resource, level) {
-  return Math.ceil(BASE_AMOUNTS[level] / gatheringRate(resource));
+  return Math.ceil((BASE_AMOUNTS[level] * resource.ratio) / gatheringRate(resource));
 }
 
 function formatTime(seconds) {
@@ -122,7 +119,7 @@ function formatGatheringRate(resource, dict = dictionary()) {
   return `(${perMinute.toLocaleString(undefined, { maximumFractionDigits: digits })}${dict.rateUnit})`;
 }
 
-function capacityLevelSegments(startAmount, endAmount) {
+function capacityLevelSegments(resource, startAmount, endAmount) {
   const levels = Object.keys(BASE_AMOUNTS).map(Number).sort((a, b) => a - b);
   const intervalAmount = endAmount - startAmount;
   let lowerBound = 0;
@@ -130,7 +127,7 @@ function capacityLevelSegments(startAmount, endAmount) {
   return levels.flatMap((level, index) => {
     const upperBound = index === levels.length - 1
       ? Number.POSITIVE_INFINITY
-      : BASE_AMOUNTS[level];
+      : BASE_AMOUNTS[level] * resource.ratio;
     const coveredAmount = Math.max(0, Math.min(endAmount, upperBound) - Math.max(startAmount, lowerBound));
     lowerBound = upperBound;
     return coveredAmount > 0 ? [{ level, percentage: coveredAmount / intervalAmount * 100 }] : [];
@@ -139,7 +136,7 @@ function capacityLevelSegments(startAmount, endAmount) {
 
 function capacityCellContent(resource, seconds, previousSeconds) {
   const rate = gatheringRate(resource);
-  const segments = capacityLevelSegments(rate * previousSeconds, rate * seconds);
+  const segments = capacityLevelSegments(resource, rate * previousSeconds, rate * seconds);
   const bar = segments.map(({ level, percentage }) =>
     `<span class="capacity-level-segment level-band-${level}" style="width:${percentage}%" title="Lv${level}"></span>`
   ).join('');
@@ -184,7 +181,7 @@ function renderTable() {
         : capacityCellContent(resource, column.value, index === 0 ? 0 : columns[index - 1].value);
       const className = state.mode === 'capacity' ? 'capacity-cell' : 'time-cell';
       const tooltip = state.mode === 'level'
-        ? `${dict[resource.key]} Lv${column.value}&#10;総資源数:${formatCapacity(BASE_AMOUNTS[column.value])}`
+        ? `${dict[resource.key]} Lv${column.value}&#10;総資源数:${formatCapacity(BASE_AMOUNTS[column.value] * resource.ratio)}`
         : '';
       const rate = state.mode === 'level' ? formatGatheringRate(resource, dict) : '';
       const tooltipMarkup = state.mode === 'level'
@@ -296,7 +293,7 @@ function scrollToCapacityLevel(level) {
   const targetColumn = columns.find((column, index) => {
     const previousSeconds = index === 0 ? 0 : columns[index - 1].value;
     return RESOURCE_TYPES.some((resource) =>
-      capacityLevelSegments(gatheringRate(resource) * previousSeconds, gatheringRate(resource) * column.value)
+      capacityLevelSegments(resource, gatheringRate(resource) * previousSeconds, gatheringRate(resource) * column.value)
         .some((segment) => segment.level === level)
     );
   });
