@@ -123,15 +123,20 @@ function formatGatheringRate(resource, dict = dictionary()) {
   return `(${perMinute.toLocaleString(undefined, { maximumFractionDigits: digits })}${dict.rateUnit})`;
 }
 
+function maxVisibleLevel() {
+  return Math.max(...getLevels());
+}
+
+// Segments only span the currently visible levels (respecting the "Lv8以上も表示" checkbox), so
+// amounts beyond the max visible level's capacity are simply not covered by any segment and are
+// left uncolored in the bar.
 function capacityLevelSegments(resource, startAmount, endAmount) {
-  const levels = Object.keys(BASE_AMOUNTS).map(Number).sort((a, b) => a - b);
+  const levels = getLevels();
   const intervalAmount = endAmount - startAmount;
   let lowerBound = 0;
 
-  return levels.flatMap((level, index) => {
-    const upperBound = index === levels.length - 1
-      ? Number.POSITIVE_INFINITY
-      : BASE_AMOUNTS[level] * resource.ratio;
+  return levels.flatMap((level) => {
+    const upperBound = BASE_AMOUNTS[level] * resource.ratio;
     const coveredAmount = Math.max(0, Math.min(endAmount, upperBound) - Math.max(startAmount, lowerBound));
     lowerBound = upperBound;
     return coveredAmount > 0 ? [{ level, percentage: coveredAmount / intervalAmount * 100 }] : [];
@@ -140,11 +145,17 @@ function capacityLevelSegments(resource, startAmount, endAmount) {
 
 function capacityCellContent(resource, seconds, previousSeconds) {
   const rate = gatheringRate(resource);
-  const segments = capacityLevelSegments(resource, rate * previousSeconds, rate * seconds);
+  const startAmount = rate * previousSeconds;
+  const endAmount = rate * seconds;
+  const segments = capacityLevelSegments(resource, startAmount, endAmount);
+  const maxCapacity = BASE_AMOUNTS[maxVisibleLevel()] * resource.ratio;
+  // The whole interval already exceeds the max visible level's capacity, so no resource level
+  // corresponds to it: dim the value text instead of drawing a (now empty) colored bar segment.
+  const isOverCapacity = startAmount >= maxCapacity;
   const bar = segments.map(({ level, percentage }) =>
     `<span class="capacity-level-segment level-band-${level}" style="width:${percentage}%" title="Lv${level}"></span>`
   ).join('');
-  return `<span class="capacity-value">${formatCapacity(rate * seconds)}</span><span class="capacity-level-bar" aria-label="${segments.map(({ level }) => `Lv${level}`).join(', ')}">${bar}</span>`;
+  return `<span class="capacity-value${isOverCapacity ? ' is-over-capacity' : ''}">${formatCapacity(endAmount)}</span><span class="capacity-level-bar" aria-label="${segments.map(({ level }) => `Lv${level}`).join(', ')}">${bar}</span>`;
 }
 
 function visibleColumns() {

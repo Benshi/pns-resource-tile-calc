@@ -361,6 +361,7 @@ thead .resource-column, thead .speed-column { z-index: 3; text-align: center; }
 .capacity-cell { color: #e2c19e; }
 table.is-capacity-mode .capacity-cell { position: relative; padding: 6px 12px 13px 8px; text-align: right; }
 .capacity-value { position: relative; z-index: 1; }
+.capacity-value.is-over-capacity { opacity: .45; }
 .capacity-level-bar {
   display: flex;
   position: absolute;
