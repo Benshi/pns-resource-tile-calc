@@ -5,7 +5,9 @@ const RESOURCE_TYPES = [
   { key: 'gas', ratio: 1 }
 ];
 
-const BASE_AMOUNTS = { 8: 26000, 7: 20000, 6: 14000, 5: 10000, 4: 6750, 3: 4000, 2: 2000, 1: 1000 };
+const BASE_AMOUNTS = {
+  12: 50000, 11: 44000, 10: 38000, 9: 32000, 8: 26000, 7: 20000, 6: 14000, 5: 10000, 4: 6750, 3: 4000, 2: 2000, 1: 1000
+};
 // Common hourly base rate (per ratio unit) used by all resources. The gathering time only
 // depends on the total speed buff and level, so any resource's actual per-second rate is
 // obtained by scaling this common rate by its `ratio`, which cancels out when computing time.

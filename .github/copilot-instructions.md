@@ -67,7 +67,7 @@ This project (`pns-resource-tile-calc`) is a web-based gathering time calculator
 
 ## 4. Master Data & Calculation Rules
 
-Only official and verified level amounts (Lv.1 to Lv.8) should be defined.
+Only official and verified level amounts (Lv.1 to Lv.12) should be defined.
 
 ```javascript
 // Master Data Definition
@@ -79,14 +79,18 @@ const RESOURCE_TYPES = [
 ];
 
 const BASE_AMOUNTS = {
-  8: 26000,
-  7: 20000,
-  6: 14000,
-  5: 10000,
-  4:  6750,
-  3:  4000,
-  2:  2000,
-  1:  1000
+  12: 50000,
+  11: 44000,
+  10: 38000,
+  9:  32000,
+  8:  26000,
+  7:  20000,
+  6:  14000,
+  5:  10000,
+  4:   6750,
+  3:   4000,
+  2:   2000,
+  1:   1000
 };
 ```
 
