@@ -30,7 +30,9 @@ const I18N = {
     hour: '1時間',
     helpTitle: '採集速度の確認方法',
     hideBuffSettings: 'バフ設定を隠す',
-    showBuffSettings: 'バフ設定を表示'
+    showBuffSettings: 'バフ設定を表示',
+    jumpToLevel: 'Lv{level}の時間帯へ移動',
+    rateUnit: '/分'
   },
   en: {
     title: 'Gathering Time Calculator Tool',
@@ -63,7 +65,9 @@ const I18N = {
     hour: '1 hour',
     helpTitle: 'How to check gathering speed',
     hideBuffSettings: 'Hide buffs',
-    showBuffSettings: 'Show buffs'
+    showBuffSettings: 'Show buffs',
+    jumpToLevel: 'Go to the Lv{level} time range',
+    rateUnit: '/min'
   },
   'zh-TW': {
     title: '採集時間計算工具',
@@ -96,7 +100,9 @@ const I18N = {
     hour: '1小時',
     helpTitle: '如何確認採集速度',
     hideBuffSettings: '隱藏加成設定',
-    showBuffSettings: '顯示加成設定'
+    showBuffSettings: '顯示加成設定',
+    jumpToLevel: '前往 Lv{level} 的時間區間',
+    rateUnit: '/分'
   },
   'zh-CN': {
     title: '采集时间计算工具',
@@ -129,7 +135,9 @@ const I18N = {
     hour: '1小时',
     helpTitle: '如何确认采集速度',
     hideBuffSettings: '隐藏加成设置',
-    showBuffSettings: '显示加成设置'
+    showBuffSettings: '显示加成设置',
+    jumpToLevel: '前往 Lv{level} 的时间区间',
+    rateUnit: '/分'
   },
   ko: {
     title: '채집 시간 계산 툴',
@@ -162,7 +170,9 @@ const I18N = {
     hour: '1시간',
     helpTitle: '채집 속도 확인 방법',
     hideBuffSettings: '버프 설정 숨기기',
-    showBuffSettings: '버프 설정 표시'
+    showBuffSettings: '버프 설정 표시',
+    jumpToLevel: 'Lv{level} 시간대로 이동',
+    rateUnit: '/분'
   },
   ru: {
     title: 'Инструмент расчета времени сбора',
@@ -195,6 +205,8 @@ const I18N = {
     hour: '1 час',
     helpTitle: 'Как проверить скорость сбора',
     hideBuffSettings: 'Скрыть настройки',
-    showBuffSettings: 'Показать настройки'
+    showBuffSettings: 'Показать настройки',
+    jumpToLevel: 'Перейти к диапазону времени Lv{level}',
+    rateUnit: '/мин'
   }
 };

@@ -19,7 +19,7 @@ const JAPANESE = {
   deletePreset: '削除', selectPresetDefault: '-- プリセット選択 --', presetSaved: 'プリセットを保存しました。',
   presetDeleted: 'プリセットを削除しました。', levelMode: 'レベル別', capacityMode: '時間別',
   resourceSpeed: '資源別採集速度', helpTitle: '採集速度の確認方法', totalResources: '総資源量',
-  capacityInterval: '単位時間:'
+  capacityInterval: '単位時間:', jumpToLevel: 'Lv{level}の時間帯へ移動', rateUnit: '/分'
 };
 
 const DEFAULT_SETTINGS = {
@@ -51,7 +51,13 @@ function closeOpenTooltips() {
 function openPinnedTooltip(cell) {
   const tooltip = document.getElementById('pinnedTooltip');
   const cellBounds = cell.getBoundingClientRect();
-  tooltip.textContent = cell.dataset.tooltip;
+  const main = document.createElement('span');
+  const rate = document.createElement('span');
+  main.className = 'tooltip-main';
+  rate.className = 'tooltip-rate';
+  main.textContent = cell.dataset.tooltip;
+  rate.textContent = cell.dataset.rate;
+  tooltip.replaceChildren(main, rate);
   tooltip.classList.add('is-visible');
 
   const tooltipBounds = tooltip.getBoundingClientRect();
@@ -107,6 +113,12 @@ function formatCapacity(value) {
   return Math.floor(value).toLocaleString();
 }
 
+function formatGatheringRate(resource, dict = dictionary()) {
+  const perMinute = gatheringRate(resource) * 60;
+  const digits = Number.isInteger(perMinute) ? 0 : 1;
+  return `(${perMinute.toLocaleString(undefined, { maximumFractionDigits: digits })}${dict.rateUnit})`;
+}
+
 function capacityLevelSegments(resource, startAmount, endAmount) {
   const levels = Object.keys(BASE_AMOUNTS).map(Number).sort((a, b) => a - b);
   const intervalAmount = endAmount - startAmount;
@@ -159,7 +171,7 @@ function renderTable() {
     </th>` : ''}
     ${columns.map((column) => state.mode === 'level'
       ? `<th class="level-header" data-level="${column.value}">${column.label}<span class="level-header-bar level-band-${column.value}"></span></th>`
-      : `<th>${column.label}</th>`
+      : `<th data-column-id="${column.id}">${column.label}</th>`
     ).join('')}
   </tr>`;
   tableBody.innerHTML = RESOURCE_TYPES.map((resource) => {
@@ -169,9 +181,13 @@ function renderTable() {
         : capacityCellContent(resource, column.value, index === 0 ? 0 : columns[index - 1].value);
       const className = state.mode === 'capacity' ? 'capacity-cell' : 'time-cell';
       const tooltip = state.mode === 'level'
-        ? ` data-tooltip="${dict[resource.key]} Lv${column.value}&#10;総資源数:${formatCapacity(BASE_AMOUNTS[column.value] * resource.ratio)}" tabindex="0"`
+        ? `${dict[resource.key]} Lv${column.value}&#10;総資源数:${formatCapacity(BASE_AMOUNTS[column.value] * resource.ratio)}`
         : '';
-      return `<td class="${className}" data-result="${resource.key}-${column.id}"${tooltip}>${content}</td>`;
+      const rate = state.mode === 'level' ? formatGatheringRate(resource, dict) : '';
+      const tooltipMarkup = state.mode === 'level'
+        ? `<span class="cell-tooltip" aria-hidden="true"><span class="tooltip-main">${tooltip}</span><span class="tooltip-rate">${rate}</span></span>`
+        : '';
+      return `<td class="${className}" data-result="${resource.key}-${column.id}"${state.mode === 'level' ? ` data-tooltip="${tooltip}" data-rate="${rate}" tabindex="0"` : ''}><span class="time-value">${content}</span>${tooltipMarkup}</td>`;
     }).join('');
     renderCapacityLegend();
     return `<tr>
@@ -223,19 +239,33 @@ function updateTableValues() {
         const columnIndex = visibleColumns().findIndex(({ id }) => id === column.id);
         const previousSeconds = columnIndex === 0 ? 0 : visibleColumns()[columnIndex - 1].value;
         cell.innerHTML = capacityCellContent(resource, column.value, previousSeconds);
+      } else {
+        const rate = formatGatheringRate(resource);
+        cell.dataset.rate = rate;
+        cell.innerHTML = `<span class="time-value">${formatTime(calculateTime(resource, column.value))}</span><span class="cell-tooltip" aria-hidden="true"><span class="tooltip-main">${cell.dataset.tooltip}</span><span class="tooltip-rate">${rate}</span></span>`;
       }
     });
   });
+  const openCell = document.querySelector('.time-cell.is-tooltip-open');
+  if (openCell) openPinnedTooltip(openCell);
 }
 
 function renderCapacityLegend() {
   const legend = document.getElementById('capacityLegend');
+  const dict = dictionary();
   const levels = state.mode === 'level'
     ? getLevels().sort((a, b) => a - b)
     : Object.keys(BASE_AMOUNTS).map(Number).sort((a, b) => a - b);
   legend.innerHTML = levels
-    .map((level) => `<span class="capacity-legend-item"><span class="capacity-legend-swatch level-band-${level}"></span>Lv${level}</span>`)
+    .map((level) => state.mode === 'capacity'
+      ? `<button type="button" class="capacity-legend-item" data-capacity-level="${level}" aria-label="${dict.jumpToLevel.replace('{level}', level)}"><span class="capacity-legend-swatch level-band-${level}"></span>Lv${level}</button>`
+      : `<span class="capacity-legend-item"><span class="capacity-legend-swatch level-band-${level}"></span>Lv${level}</span>`)
     .join('');
+  if (state.mode === 'capacity') {
+    legend.querySelectorAll('[data-capacity-level]').forEach((button) => {
+      button.addEventListener('click', () => scrollToCapacityLevel(Number(button.dataset.capacityLevel)));
+    });
+  }
 }
 
 function scrollToFrequentLevelRange() {
@@ -249,6 +279,30 @@ function scrollToFrequentLevelRange() {
 
     const stickyWidth = stickyColumns.reduce((total, column) => total + column.getBoundingClientRect().width, 0);
     wrapper.scrollLeft = Math.max(0, levelSixHeader.offsetLeft - stickyWidth - 16);
+  });
+}
+
+function scrollToCapacityLevel(level) {
+  if (state.mode !== 'capacity') return;
+
+  const columns = visibleColumns();
+  const targetColumn = columns.find((column, index) => {
+    const previousSeconds = index === 0 ? 0 : columns[index - 1].value;
+    return RESOURCE_TYPES.some((resource) =>
+      capacityLevelSegments(resource, gatheringRate(resource) * previousSeconds, gatheringRate(resource) * column.value)
+        .some((segment) => segment.level === level)
+    );
+  });
+  if (!targetColumn) return;
+
+  requestAnimationFrame(() => {
+    const wrapper = document.getElementById('tableWrapper');
+    const header = document.querySelector(`[data-column-id="${targetColumn.id}"]`);
+    const stickyColumns = [...document.querySelectorAll('#calculatorTable thead .resource-column, #calculatorTable thead .speed-column')];
+    if (!header || wrapper.scrollWidth <= wrapper.clientWidth) return;
+
+    const stickyWidth = stickyColumns.reduce((total, column) => total + column.getBoundingClientRect().width, 0);
+    wrapper.scrollLeft = Math.max(0, header.offsetLeft - stickyWidth - 8);
   });
 }
 
