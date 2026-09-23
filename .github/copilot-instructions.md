@@ -92,13 +92,17 @@ const BASE_AMOUNTS = {
   2:   2000,
   1:   1000
 };
+
+// From Lv.9 onward, the tile's own gathering speed also increases (on top of the buff-based
+// rate below). Levels not listed here (1-8, and any future unlisted level) use a multiplier of 1.
+const LEVEL_RATE_MULTIPLIERS = { 9: 1.2, 10: 1.4, 11: 1.7, 12: 2.0 };
 ```
 
 * **Calculation Formula** (matches the officially observed in-game values — all resources reach any given level at the *same* elapsed time when their buffs are equal, because `ratio` scales both the resource capacity and the resource's actual gathering rate, and cancels out):
   * `Resource Capacity = BASE_AMOUNTS[level] * RESOURCE_TYPES[key].ratio`
   * `Total Speed (%) = Global Speed (%) + Resource-specific Speed (%)`
   * `Common Hourly Rate = 2160 * (120 + Total Speed) / 100` (shared by all resources, per 1 unit of `ratio`)
-  * `Per-second Rate = RESOURCE_TYPES[key].ratio * Common Hourly Rate / 3600`
-  * `Time (Seconds) = Math.ceil(Resource Capacity / Per-second Rate)`
-  * The same `Per-second Rate` is used for capacity ("時間別") mode, where `Capacity = Per-second Rate * elapsed seconds`.
+  * `Per-second Rate(level) = RESOURCE_TYPES[key].ratio * Common Hourly Rate / 3600 * (LEVEL_RATE_MULTIPLIERS[level] || 1)`
+  * **Level mode ("レベル別")**: each level column is independent — `Time (Seconds) = Math.ceil(Resource Capacity(level) / Per-second Rate(level))`. Because the rate multiplier (Lv.9+) grows faster than the capacity per level, higher levels can legitimately finish *faster* than lower ones (e.g. Lv.11/Lv.12 finishing before Lv.9/Lv.10) — this is expected, verified game behavior, not a bug.
+  * **Capacity mode ("時間別")**: models a single tile that starts empty and gathers continuously; the tile's effective rate automatically steps up to `Per-second Rate(level)` once the accumulated amount crosses that level's capacity threshold (cumulative, piecewise-rate accumulation), and the amount is capped at the maximum visible level's capacity once fully gathered.
   

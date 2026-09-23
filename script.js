@@ -12,6 +12,10 @@ const BASE_AMOUNTS = {
 // depends on the total speed buff and level, so any resource's actual per-second rate is
 // obtained by scaling this common rate by its `ratio`, which cancels out when computing time.
 const BASE_HOURLY_RATE = 2160;
+// From Lv.9 onward, the tile's own gathering speed also increases (verified from official data),
+// on top of the buff-based rate above. Levels not listed here (1-8, and any future unlisted level)
+// use the default multiplier of 1 (no bonus).
+const LEVEL_RATE_MULTIPLIERS = { 9: 1.2, 10: 1.4, 11: 1.7, 12: 2 };
 const MAX_CAPACITY_DURATION_SECONDS = 6 * 60 * 60;
 const CAPACITY_INTERVALS = [5, 10, 15, 30, 60];
 const STORAGE_KEY = 'pns_gather_calc_settings';
@@ -91,13 +95,14 @@ function getLevels() {
     .filter((level) => state.showLevel8 || level < 8);
 }
 
-function gatheringRate(resource) {
+function gatheringRate(resource, level) {
   const totalSpeed = parseNumber(state.globalBuff) + parseNumber(state[`${resource.key}Speed`]);
-  return resource.ratio * (BASE_HOURLY_RATE * (120 + totalSpeed) / 100) / 3600;
+  const multiplier = LEVEL_RATE_MULTIPLIERS[level] || 1;
+  return resource.ratio * (BASE_HOURLY_RATE * (120 + totalSpeed) / 100) / 3600 * multiplier;
 }
 
 function calculateTime(resource, level) {
-  return Math.ceil((BASE_AMOUNTS[level] * resource.ratio) / gatheringRate(resource));
+  return Math.ceil((BASE_AMOUNTS[level] * resource.ratio) / gatheringRate(resource, level));
 }
 
 function formatTime(seconds) {
@@ -119,14 +124,38 @@ function formatCapacity(value) {
   return Math.floor(value).toLocaleString();
 }
 
-function formatGatheringRate(resource, dict = dictionary()) {
-  const perMinute = gatheringRate(resource) * 60;
+function formatGatheringRate(resource, level, dict = dictionary()) {
+  const perMinute = gatheringRate(resource, level) * 60;
   const digits = Number.isInteger(perMinute) ? 0 : 1;
   return `(${perMinute.toLocaleString(undefined, { maximumFractionDigits: digits })}${dict.rateUnit})`;
 }
 
 function maxVisibleLevel() {
   return Math.max(...getLevels());
+}
+
+// Simulates a single tile that starts empty and automatically gathers faster once its
+// accumulated amount crosses each level's capacity threshold (the level's own gathering
+// speed, including its rate multiplier, applies to the segment leading up to that level).
+function accumulatedCapacity(resource, elapsedSeconds) {
+  let remainingSeconds = elapsedSeconds;
+  let amount = 0;
+  let previousCapacity = 0;
+  for (const level of getLevels()) {
+    const levelCapacity = BASE_AMOUNTS[level] * resource.ratio;
+    const segmentCapacity = levelCapacity - previousCapacity;
+    const segmentTime = segmentCapacity / gatheringRate(resource, level);
+    if (remainingSeconds >= segmentTime) {
+      amount = levelCapacity;
+      remainingSeconds -= segmentTime;
+      previousCapacity = levelCapacity;
+    } else {
+      amount = previousCapacity + remainingSeconds * gatheringRate(resource, level);
+      remainingSeconds = 0;
+      break;
+    }
+  }
+  return amount;
 }
 
 // Segments only span the currently visible levels (respecting the "Lv8以上も表示" checkbox), so
@@ -146,9 +175,8 @@ function capacityLevelSegments(resource, startAmount, endAmount) {
 }
 
 function capacityCellContent(resource, seconds, previousSeconds) {
-  const rate = gatheringRate(resource);
-  const startAmount = rate * previousSeconds;
-  const endAmount = rate * seconds;
+  const startAmount = accumulatedCapacity(resource, previousSeconds);
+  const endAmount = accumulatedCapacity(resource, seconds);
   const segments = capacityLevelSegments(resource, startAmount, endAmount);
   const maxCapacity = BASE_AMOUNTS[maxVisibleLevel()] * resource.ratio;
   // The whole interval already exceeds the max visible level's capacity, so no resource level
@@ -200,7 +228,7 @@ function renderTable() {
       const tooltip = state.mode === 'level'
         ? `${dict[resource.key]} Lv${column.value}&#10;総資源数:${formatCapacity(BASE_AMOUNTS[column.value] * resource.ratio)}`
         : '';
-      const rate = state.mode === 'level' ? formatGatheringRate(resource, dict) : '';
+      const rate = state.mode === 'level' ? formatGatheringRate(resource, column.value, dict) : '';
       const tooltipMarkup = state.mode === 'level'
         ? `<span class="cell-tooltip" aria-hidden="true"><span class="tooltip-main">${tooltip}</span><span class="tooltip-rate">${rate}</span></span>`
         : '';
@@ -257,7 +285,7 @@ function updateTableValues() {
         const previousSeconds = columnIndex === 0 ? 0 : visibleColumns()[columnIndex - 1].value;
         cell.innerHTML = capacityCellContent(resource, column.value, previousSeconds);
       } else {
-        const rate = formatGatheringRate(resource);
+        const rate = formatGatheringRate(resource, column.value);
         cell.dataset.rate = rate;
         cell.innerHTML = `<span class="time-value">${formatTime(calculateTime(resource, column.value))}</span><span class="cell-tooltip" aria-hidden="true"><span class="tooltip-main">${cell.dataset.tooltip}</span><span class="tooltip-rate">${rate}</span></span>`;
       }
@@ -308,7 +336,7 @@ function scrollToCapacityLevel(level) {
   const targetColumn = columns.find((column, index) => {
     const previousSeconds = index === 0 ? 0 : columns[index - 1].value;
     return RESOURCE_TYPES.some((resource) =>
-      capacityLevelSegments(resource, gatheringRate(resource) * previousSeconds, gatheringRate(resource) * column.value)
+      capacityLevelSegments(resource, accumulatedCapacity(resource, previousSeconds), accumulatedCapacity(resource, column.value))
         .some((segment) => segment.level === level)
     );
   });
