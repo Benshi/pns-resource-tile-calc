@@ -1,6 +1,6 @@
 # pns-resource-tile-calc
 
-Resource tile collection time calculator for Puzzles &amp; Survival.
+Gathering Time Calculator Tool for Puzzles &amp; Survival.
 
 ## Public site
 

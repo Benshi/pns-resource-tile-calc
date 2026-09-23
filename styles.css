@@ -394,7 +394,8 @@ table.is-capacity-mode .capacity-cell { position: relative; padding: 6px 12px 13
 .share-title { display: block; margin-bottom: 6px; color: var(--muted); font-size: .82rem; font-weight: 700; }
 .share-input-group { gap: 7px; }
 .share-input-group input { flex: 1; padding: 7px 9px; color: var(--muted); font-size: .82rem; }
-footer { margin-top: 12px; color: #858a90; font-size: .72rem; text-align: center; }
+footer { margin-top: 12px; color: #858a90; font-size: .72rem; line-height: 1.45; text-align: center; }
+footer div + div { margin-top: 1px; }
 footer a { color: #8bbce8; text-decoration: none; }
 footer a:hover { color: #b7d8f4; text-decoration: underline; }
 

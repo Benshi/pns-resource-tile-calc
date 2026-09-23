@@ -59,7 +59,7 @@ This project (`pns-resource-tile-calc`) is a web-based gathering time calculator
 * **Initial Scroll Position**: On page load, automatically scroll the table horizontally so that **Lv.7** is prominently visible in the viewport.
 * **Smooth Layout Transitions**: Switching checkboxes or view modes MUST trigger smooth CSS transitions/animations (e.g., opacity, column width, or slide effects).
 
-### Gathering Capacity Mode (収穫量別モード)
+### Time-Based Mode (時間別モード)
 * In capacity mode, display time columns based on target duration steps:
   * Intervals: **0:30, 1:00, 1:30, 2:00, 2:30, 3:00, ..., up to 6:00** (30-minute increments).
 
