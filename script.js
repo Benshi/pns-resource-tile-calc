@@ -187,7 +187,7 @@ function renderTable() {
       const tooltipMarkup = state.mode === 'level'
         ? `<span class="cell-tooltip" aria-hidden="true"><span class="tooltip-main">${tooltip}</span><span class="tooltip-rate">${rate}</span></span>`
         : '';
-      return `<td class="${className}" data-result="${resource.key}-${column.id}"${state.mode === 'level' ? ` data-tooltip="${tooltip}" data-rate="${rate}" tabindex="0"` : ''}><span class="time-value">${content}</span>${tooltipMarkup}</td>`;
+      return `<td class="${className}" data-result="${resource.key}-${column.id}"${state.mode === 'level' ? ` data-tooltip="${tooltip}" data-rate="${rate}" tabindex="-1"` : ''}><span class="time-value">${content}</span>${tooltipMarkup}</td>`;
     }).join('');
     renderCapacityLegend();
     return `<tr>
