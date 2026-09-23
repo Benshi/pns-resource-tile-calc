@@ -295,7 +295,10 @@ function scrollToLevel(level, offset = 8) {
     if (!levelHeader || wrapper.scrollWidth <= wrapper.clientWidth) return;
 
     const stickyWidth = stickyColumns.reduce((total, column) => total + column.getBoundingClientRect().width, 0);
-    wrapper.scrollLeft = Math.max(0, levelHeader.offsetLeft - stickyWidth - offset);
+    const firstLevel = getLevels()[0];
+    wrapper.scrollLeft = level === firstLevel
+      ? 0
+      : Math.max(0, levelHeader.offsetLeft - stickyWidth - offset);
   });
 }
 
