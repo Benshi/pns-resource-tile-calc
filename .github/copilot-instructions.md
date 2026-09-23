@@ -90,10 +90,10 @@ const BASE_AMOUNTS = {
 };
 ```
 
-* **Calculation Formula**:
-  * `Resource Capacity = BASE_AMOUNTS[level] * RESOURCE_TYPES[key].ratio`
+* **Calculation Formula** (matches the officially observed in-game values; `RESOURCE_TYPES[key].ratio` is defined for master-data parity only and is NOT used by this formula):
   * `Total Speed (%) = Global Speed (%) + Resource-specific Speed (%)`
-  * `Hourly Base Gathering Speed`: Food: 36,000 / Wood: 28,800 / Steel: 5,760 / Gas: 1,440
-  * `Per-second Capacity = (Base Speed * (1 + Total Speed / 100)) / 3600`
-  * `Time (Seconds) = Math.ceil(Resource Capacity / Per-second Capacity)`
+  * `Speed Factor = 2160 * ((120 + Total Speed) / 100)`
+  * `Per-second Rate = Speed Factor / 3600`
+  * `Time (Seconds) = Math.ceil(BASE_AMOUNTS[level] / Per-second Rate)`
+  * The same formula (independent of `hourlySpeed`/`ratio`) is used for capacity ("時間別") mode, where `Capacity = Per-second Rate * elapsed seconds`.
   
