@@ -1,11 +1,15 @@
 const RESOURCE_TYPES = [
-  { key: 'food', ratio: 20, hourlySpeed: 36000 },
-  { key: 'wood', ratio: 20, hourlySpeed: 28800 },
-  { key: 'steel', ratio: 4, hourlySpeed: 5760 },
-  { key: 'gas', ratio: 1, hourlySpeed: 1440 }
+  { key: 'food', ratio: 20 },
+  { key: 'wood', ratio: 20 },
+  { key: 'steel', ratio: 4 },
+  { key: 'gas', ratio: 1 }
 ];
 
 const BASE_AMOUNTS = { 8: 26000, 7: 20000, 6: 14000, 5: 10000, 4: 6750, 3: 4000, 2: 2000, 1: 1000 };
+// Common hourly base rate (per ratio unit) used by all resources. The gathering time only
+// depends on the total speed buff and level, so any resource's actual per-second rate is
+// obtained by scaling this common rate by its `ratio`, which cancels out when computing time.
+const BASE_HOURLY_RATE = 2160;
 const MAX_CAPACITY_DURATION_SECONDS = 6 * 60 * 60;
 const CAPACITY_INTERVALS = [5, 10, 15, 30, 60];
 const STORAGE_KEY = 'pns_gather_calc_settings';
@@ -87,7 +91,7 @@ function getLevels() {
 
 function gatheringRate(resource) {
   const totalSpeed = parseNumber(state.globalBuff) + parseNumber(state[`${resource.key}Speed`]);
-  return resource.hourlySpeed * (1 + totalSpeed / 100) / 3600;
+  return resource.ratio * (BASE_HOURLY_RATE * (120 + totalSpeed) / 100) / 3600;
 }
 
 function calculateTime(resource, level) {

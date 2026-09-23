@@ -90,10 +90,11 @@ const BASE_AMOUNTS = {
 };
 ```
 
-* **Calculation Formula** (matches the officially observed in-game values; `RESOURCE_TYPES[key].ratio` is defined for master-data parity only and is NOT used by this formula):
+* **Calculation Formula** (matches the officially observed in-game values — all resources reach any given level at the *same* elapsed time when their buffs are equal, because `ratio` scales both the resource capacity and the resource's actual gathering rate, and cancels out):
+  * `Resource Capacity = BASE_AMOUNTS[level] * RESOURCE_TYPES[key].ratio`
   * `Total Speed (%) = Global Speed (%) + Resource-specific Speed (%)`
-  * `Speed Factor = 2160 * ((120 + Total Speed) / 100)`
-  * `Per-second Rate = Speed Factor / 3600`
-  * `Time (Seconds) = Math.ceil(BASE_AMOUNTS[level] / Per-second Rate)`
-  * The same formula (independent of `hourlySpeed`/`ratio`) is used for capacity ("時間別") mode, where `Capacity = Per-second Rate * elapsed seconds`.
+  * `Common Hourly Rate = 2160 * (120 + Total Speed) / 100` (shared by all resources, per 1 unit of `ratio`)
+  * `Per-second Rate = RESOURCE_TYPES[key].ratio * Common Hourly Rate / 3600`
+  * `Time (Seconds) = Math.ceil(Resource Capacity / Per-second Rate)`
+  * The same `Per-second Rate` is used for capacity ("時間別") mode, where `Capacity = Per-second Rate * elapsed seconds`.
   
