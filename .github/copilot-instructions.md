@@ -97,4 +97,14 @@ const BASE_AMOUNTS = {
   * `Per-second Rate = RESOURCE_TYPES[key].ratio * Common Hourly Rate / 3600`
   * `Time (Seconds) = Math.ceil(Resource Capacity / Per-second Rate)`
   * The same `Per-second Rate` is used for capacity ("時間別") mode, where `Capacity = Per-second Rate * elapsed seconds`.
-  
+
+---
+
+## 5. Development Workflow
+
+### Pull Request Creation
+* The built-in `create_pull_request` tool is unreliable in this environment (fails with "runtime settings are not configured for this session"), even after VS Code restarts/re-auth.
+* **Always use the `gh pr create` CLI command** to open pull requests instead of the built-in tool. Example:
+  `gh pr create --repo Benshi/pns-resource-tile-calc --base main --head <branch> --title "<title>" --body "<body>"`
+* `gh` is installed via winget and authenticated as `Benshi`. If a fresh PowerShell session doesn't find `gh` on PATH, refresh it first:
+  `$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")`
