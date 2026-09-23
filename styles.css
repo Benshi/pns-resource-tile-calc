@@ -333,6 +333,11 @@ tbody tr:nth-child(even) td { background: rgba(39, 42, 47, .9); }
   font-family: inherit;
   text-align: left;
 }
+.resource-column select {
+  width: 100%;
+  padding: 5px 6px;
+  font-weight: 700;
+}
 .speed-column {
   width: 116px;
   position: sticky;
