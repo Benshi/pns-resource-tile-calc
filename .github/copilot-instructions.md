@@ -10,6 +10,8 @@ This project (`pns-resource-tile-calc`) is a web-based gathering time calculator
 * **i18n & Default Language Rules**:
   * Default/Fallback UI language MUST be **Japanese (ja)**.
   * If `i18n.js` is missing, fails to load, or encounters missing keys, always fall back gracefully to Japanese text so the UI never breaks.
+  * **Target language list**: the game supports 19 languages total (see the tracking issues for the full list/status): English, Japanese, Simplified Chinese, Traditional Chinese, Korean, Russian, French, German, Spanish, Indonesian, Vietnamese, Turkish, Thai, Italian, Portuguese, Malay, Arabic, Polish, Dutch. Text translations (`i18n.js`) and help images (`img/help/{lang}.png`) are rolled out incrementally language-by-language; check the "言語サポート" and "ヘルプ画像提供" GitHub issues for current status before assuming a language is (or isn't) done.
+  * **Help image fallback**: `img/help/{lang}.png` may not exist yet for newly-added languages. `openHelp()` must fall back from the current language to **English**, and finally to **Japanese**, in that order (skipping duplicates), so the help popup never shows a broken image.
 
 ---
 

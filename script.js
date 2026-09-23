@@ -584,10 +584,15 @@ function synchronizeControls() {
 function openHelp() {
   const modal = document.getElementById('helpModal');
   const image = document.getElementById('helpImage');
+  // Help images may lag behind new language support, so fall back from the current language to
+  // English, and finally to Japanese (the tool's baseline language), skipping any duplicates.
+  const fallbackChain = [state.lang, 'en', 'ja'].filter((lang, index, all) => all.indexOf(lang) === index);
+  let fallbackIndex = 0;
   image.onerror = () => {
-    if (!image.src.endsWith('/img/help/ja.png')) image.src = 'img/help/ja.png';
+    fallbackIndex += 1;
+    if (fallbackIndex < fallbackChain.length) image.src = `img/help/${fallbackChain[fallbackIndex]}.png`;
   };
-  image.src = `img/help/${state.lang}.png`;
+  image.src = `img/help/${fallbackChain[0]}.png`;
   modal.classList.add('active');
   modal.setAttribute('aria-hidden', 'false');
   document.getElementById('closeModalIcon').focus();
