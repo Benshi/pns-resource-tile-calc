@@ -485,9 +485,9 @@ footer a:hover { color: #b7d8f4; text-decoration: underline; }
   table { min-width: 650px; font-size: .84rem; }
   table.is-expanded-level-mode:not(.is-compact-time-mode) { min-width: 810px; }
   table.is-compact-time-mode { min-width: 560px; }
-  table.is-expanded-level-mode.is-compact-time-mode { min-width: 500px; }
+  table.is-expanded-level-mode.is-compact-time-mode { min-width: 650px; }
   table.is-buff-settings-hidden.is-compact-time-mode { min-width: 450px; }
-  table.is-buff-settings-hidden.is-expanded-level-mode.is-compact-time-mode { min-width: 450px; }
+  table.is-buff-settings-hidden.is-expanded-level-mode.is-compact-time-mode { min-width: 540px; }
   table.is-buff-settings-hidden.is-expanded-level-mode:not(.is-compact-time-mode) { min-width: 732px; }
   table.is-buff-settings-hidden.is-capacity-mode { min-width: 920px; }
   table.is-capacity-mode { min-width: 1100px; }

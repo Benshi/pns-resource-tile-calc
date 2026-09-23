@@ -19,7 +19,7 @@ const JAPANESE = {
   deletePreset: '削除', selectPresetDefault: '-- プリセット選択 --', presetSaved: 'プリセットを保存しました。',
   presetDeleted: 'プリセットを削除しました。', levelMode: 'レベル別', capacityMode: '時間別',
   resourceSpeed: '資源別採集速度', helpTitle: '採集速度の確認方法', totalResources: '総資源量',
-  capacityInterval: '単位時間:', jumpToLevel: 'Lv{level}の時間帯へ移動', rateUnit: '/分'
+  capacityInterval: '単位時間:', jumpToLevel: 'Lv{level}の時間帯へ移動', jumpToLevelColumn: 'Lv{level}列へ移動', rateUnit: '/分'
 };
 
 const DEFAULT_SETTINGS = {
@@ -257,28 +257,32 @@ function renderCapacityLegend() {
     ? getLevels().sort((a, b) => a - b)
     : Object.keys(BASE_AMOUNTS).map(Number).sort((a, b) => a - b);
   legend.innerHTML = levels
-    .map((level) => state.mode === 'capacity'
-      ? `<button type="button" class="capacity-legend-item" data-capacity-level="${level}" aria-label="${dict.jumpToLevel.replace('{level}', level)}"><span class="capacity-legend-swatch level-band-${level}"></span>Lv${level}</button>`
-      : `<span class="capacity-legend-item"><span class="capacity-legend-swatch level-band-${level}"></span>Lv${level}</span>`)
+    .map((level) => `<button type="button" class="capacity-legend-item" data-legend-level="${level}" aria-label="${(state.mode === 'capacity' ? dict.jumpToLevel : dict.jumpToLevelColumn).replace('{level}', level)}"><span class="capacity-legend-swatch level-band-${level}"></span>Lv${level}</button>`)
     .join('');
-  if (state.mode === 'capacity') {
-    legend.querySelectorAll('[data-capacity-level]').forEach((button) => {
-      button.addEventListener('click', () => scrollToCapacityLevel(Number(button.dataset.capacityLevel)));
+  legend.querySelectorAll('[data-legend-level]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const level = Number(button.dataset.legendLevel);
+      if (state.mode === 'capacity') scrollToCapacityLevel(level);
+      else scrollToLevel(level);
     });
-  }
+  });
 }
 
 function scrollToFrequentLevelRange() {
+  scrollToLevel(6, 16);
+}
+
+function scrollToLevel(level, offset = 8) {
   if (state.mode !== 'level') return;
 
   requestAnimationFrame(() => {
     const wrapper = document.getElementById('tableWrapper');
-    const levelSixHeader = document.querySelector('.level-header[data-level="6"]');
+    const levelHeader = document.querySelector(`.level-header[data-level="${level}"]`);
     const stickyColumns = [...document.querySelectorAll('#calculatorTable thead .resource-column, #calculatorTable thead .speed-column')];
-    if (!levelSixHeader || wrapper.scrollWidth <= wrapper.clientWidth) return;
+    if (!levelHeader || wrapper.scrollWidth <= wrapper.clientWidth) return;
 
     const stickyWidth = stickyColumns.reduce((total, column) => total + column.getBoundingClientRect().width, 0);
-    wrapper.scrollLeft = Math.max(0, levelSixHeader.offsetLeft - stickyWidth - 16);
+    wrapper.scrollLeft = Math.max(0, levelHeader.offsetLeft - stickyWidth - offset);
   });
 }
 

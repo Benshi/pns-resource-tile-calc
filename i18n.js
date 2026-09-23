@@ -32,6 +32,7 @@ const I18N = {
     hideBuffSettings: 'バフ設定を隠す',
     showBuffSettings: 'バフ設定を表示',
     jumpToLevel: 'Lv{level}の時間帯へ移動',
+    jumpToLevelColumn: 'Lv{level}列へ移動',
     rateUnit: '/分'
   },
   en: {
@@ -67,6 +68,7 @@ const I18N = {
     hideBuffSettings: 'Hide buffs',
     showBuffSettings: 'Show buffs',
     jumpToLevel: 'Go to the Lv{level} time range',
+    jumpToLevelColumn: 'Go to the Lv{level} column',
     rateUnit: '/min'
   },
   'zh-TW': {
@@ -102,6 +104,7 @@ const I18N = {
     hideBuffSettings: '隱藏加成設定',
     showBuffSettings: '顯示加成設定',
     jumpToLevel: '前往 Lv{level} 的時間區間',
+    jumpToLevelColumn: '前往 Lv{level} 欄',
     rateUnit: '/分'
   },
   'zh-CN': {
@@ -137,6 +140,7 @@ const I18N = {
     hideBuffSettings: '隐藏加成设置',
     showBuffSettings: '显示加成设置',
     jumpToLevel: '前往 Lv{level} 的时间区间',
+    jumpToLevelColumn: '前往 Lv{level} 列',
     rateUnit: '/分'
   },
   ko: {
@@ -172,6 +176,7 @@ const I18N = {
     hideBuffSettings: '버프 설정 숨기기',
     showBuffSettings: '버프 설정 표시',
     jumpToLevel: 'Lv{level} 시간대로 이동',
+    jumpToLevelColumn: 'Lv{level} 열로 이동',
     rateUnit: '/분'
   },
   ru: {
@@ -207,6 +212,7 @@ const I18N = {
     hideBuffSettings: 'Скрыть настройки',
     showBuffSettings: 'Показать настройки',
     jumpToLevel: 'Перейти к диапазону времени Lv{level}',
+    jumpToLevelColumn: 'Перейти к столбцу Lv{level}',
     rateUnit: '/мин'
   }
 };
