@@ -28,12 +28,13 @@ const JAPANESE = {
   deletePreset: '削除', selectPresetDefault: '-- プリセット選択 --', presetSaved: 'プリセットを保存しました。',
   presetDeleted: 'プリセットを削除しました。', levelMode: 'レベル別', capacityMode: '時間別',
   resourceSpeed: '資源別採集速度', helpTitle: '採集速度の確認方法', totalResources: '総資源量',
-  capacityInterval: '単位時間:', jumpToLevel: 'Lv{level}の時間帯へ移動', jumpToLevelColumn: 'Lv{level}列へ移動', rateUnit: '/分'
+  capacityInterval: '単位時間:', jumpToLevel: 'Lv{level}の時間帯へ移動', jumpToLevelColumn: 'Lv{level}列へ移動', rateUnit: '/分',
+  levelGroupBase: 'Lv1〜8', capacityLevelGroupLabel: '表示レベル:'
 };
 
 const DEFAULT_SETTINGS = {
   lang: 'ja', mode: 'level', showSeconds: false, showLevel8: false, showBuffSettings: true, capacityInterval: 30,
-  globalBuff: 0, foodSpeed: 0, woodSpeed: 0, steelSpeed: 0, gasSpeed: 0
+  capacityLevelGroup: 'base', globalBuff: 0, foodSpeed: 0, woodSpeed: 0, steelSpeed: 0, gasSpeed: 0
 };
 
 let state = { ...DEFAULT_SETTINGS };
@@ -89,6 +90,12 @@ function parseCapacityInterval(value) {
   return CAPACITY_INTERVALS.includes(interval) ? interval : DEFAULT_SETTINGS.capacityInterval;
 }
 
+function parseCapacityLevelGroup(value) {
+  if (value === 'base') return 'base';
+  const level = Number(value);
+  return [9, 10, 11, 12].includes(level) ? level : DEFAULT_SETTINGS.capacityLevelGroup;
+}
+
 function getLevels() {
   return Object.keys(BASE_AMOUNTS).map(Number).sort((a, b) => a - b)
     .filter((level) => state.showLevel8 || level < 8);
@@ -130,7 +137,21 @@ function formatGatheringRate(resource, level, dict = dictionary()) {
 }
 
 function maxVisibleLevel() {
-  return Math.max(...getLevels());
+  return Math.max(...activeCapacityLevels());
+}
+
+// Determines which levels the capacity ("時間別") view currently represents. When Lv8+ is
+// unchecked, or the "Lv1〜8" group is selected, it's the classic multi-level view (these levels
+// all share the same rate, so filling through them cumulatively is equivalent to filling each
+// independently). Selecting a specific Lv9-12 group isolates that single level's own capacity
+// and rate instead (matching Level mode's standalone number for that level), since Lv.9+ levels
+// no longer share a common rate with one another.
+function activeCapacityLevels() {
+  const levels = getLevels();
+  if (!state.showLevel8 || state.capacityLevelGroup === 'base') {
+    return levels.filter((level) => level <= 8);
+  }
+  return [state.capacityLevelGroup];
 }
 
 // Total elapsed time needed to fill a tile from empty up to (and including) the given level's
@@ -138,7 +159,7 @@ function maxVisibleLevel() {
 function cumulativeTimeToLevel(resource, level) {
   let time = 0;
   let previousCapacity = 0;
-  for (const currentLevel of getLevels()) {
+  for (const currentLevel of activeCapacityLevels()) {
     const levelCapacity = BASE_AMOUNTS[currentLevel] * resource.ratio;
     time += (levelCapacity - previousCapacity) / gatheringRate(resource, currentLevel);
     previousCapacity = levelCapacity;
@@ -163,7 +184,7 @@ function accumulatedCapacity(resource, elapsedSeconds) {
   let remainingSeconds = elapsedSeconds;
   let amount = 0;
   let previousCapacity = 0;
-  for (const level of getLevels()) {
+  for (const level of activeCapacityLevels()) {
     const levelCapacity = BASE_AMOUNTS[level] * resource.ratio;
     const segmentCapacity = levelCapacity - previousCapacity;
     const segmentTime = segmentCapacity / gatheringRate(resource, level);
@@ -180,11 +201,11 @@ function accumulatedCapacity(resource, elapsedSeconds) {
   return amount;
 }
 
-// Segments only span the currently visible levels (respecting the "Lv8以上も表示" checkbox), so
-// amounts beyond the max visible level's capacity are simply not covered by any segment and are
-// left uncolored in the bar.
+// Segments only span the currently active capacity levels (respecting the "Lv8以上も表示"
+// checkbox and the Lv1〜8 / Lv9-12 group selector), so amounts beyond the max active level's
+// capacity are simply not covered by any segment and are left uncolored in the bar.
 function capacityLevelSegments(resource, startAmount, endAmount) {
-  const levels = getLevels();
+  const levels = activeCapacityLevels();
   const intervalAmount = endAmount - startAmount;
   let lowerBound = 0;
 
@@ -230,8 +251,15 @@ function renderTable() {
   table.classList.toggle('is-expanded-level-mode', state.mode === 'level' && state.showLevel8);
   const tableHead = document.getElementById('tableHead');
   const tableBody = document.getElementById('tableBody');
+  const showCapacityLevelGroupSelect = state.mode === 'capacity' && state.showLevel8;
+  const resourceHeaderContent = showCapacityLevelGroupSelect
+    ? `<select id="capacityLevelGroupSelect" aria-label="${dict.capacityLevelGroupLabel}">
+        <option value="base"${state.capacityLevelGroup === 'base' ? ' selected' : ''}>${dict.levelGroupBase}</option>
+        ${[9, 10, 11, 12].map((level) => `<option value="${level}"${state.capacityLevelGroup === level ? ' selected' : ''}>Lv${level}</option>`).join('')}
+      </select>`
+    : dict.resource;
   tableHead.innerHTML = `<tr>
-    <th class="resource-column">${dict.resource}</th>
+    <th class="resource-column">${resourceHeaderContent}</th>
     ${state.showBuffSettings ? `<th class="speed-column global-speed-cell">
       <label class="global-speed-label" for="globalBuff" id="ui-globalBuffLabel">${dict.globalBuff}</label>
       <span class="speed-input-row"><input class="global-speed-input" type="number" id="globalBuff" min="0" max="999.9" step="0.1" inputmode="decimal" value="${state.globalBuff}"><span class="unit">%</span></span>
@@ -241,6 +269,14 @@ function renderTable() {
       : `<th data-column-id="${column.id}">${column.label}</th>`
     ).join('')}
   </tr>`;
+  const capacityLevelGroupSelect = document.getElementById('capacityLevelGroupSelect');
+  if (capacityLevelGroupSelect) {
+    capacityLevelGroupSelect.addEventListener('change', (event) => {
+      state.capacityLevelGroup = event.target.value === 'base' ? 'base' : Number(event.target.value);
+      persistAndSync();
+      renderTable();
+    });
+  }
   tableBody.innerHTML = RESOURCE_TYPES.map((resource) => {
     const cells = columns.map((column, index) => {
       const content = state.mode === 'level'
@@ -363,7 +399,7 @@ function updateTableValues() {
 function renderCapacityLegend() {
   const legend = document.getElementById('capacityLegend');
   const dict = dictionary();
-  const levels = getLevels();
+  const levels = state.mode === 'capacity' ? activeCapacityLevels() : getLevels();
   legend.innerHTML = levels
     .map((level) => `<button type="button" class="capacity-legend-item" data-legend-level="${level}" aria-label="${(state.mode === 'capacity' ? dict.jumpToLevel : dict.jumpToLevelColumn).replace('{level}', level)}"><span class="capacity-legend-swatch level-band-${level}"></span>Lv${level}</button>`)
     .join('');
@@ -431,7 +467,8 @@ function persistAndSync() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   const parameters = new URLSearchParams({
     g: state.globalBuff, f: state.foodSpeed, w: state.woodSpeed, s: state.steelSpeed, a: state.gasSpeed,
-    sec: state.showSeconds ? '1' : '0', l8: state.showLevel8 ? '1' : '0', mode: state.mode, ci: state.capacityInterval, lang: state.lang
+    sec: state.showSeconds ? '1' : '0', l8: state.showLevel8 ? '1' : '0', mode: state.mode, ci: state.capacityInterval,
+    clg: state.capacityLevelGroup, lang: state.lang
   });
   document.getElementById('shareUrlInput').value = `${location.origin}${location.pathname}?${parameters}`;
 }
@@ -452,6 +489,7 @@ function loadState() {
   if (parameters.has('l8')) state.showLevel8 = parameters.get('l8') === '1';
   if (parameters.get('mode') === 'capacity') state.mode = 'capacity';
   state.capacityInterval = parseCapacityInterval(parameters.get('ci') || state.capacityInterval);
+  state.capacityLevelGroup = parseCapacityLevelGroup(parameters.get('clg') || state.capacityLevelGroup);
   if (typeof I18N !== 'undefined' && I18N[parameters.get('lang')]) state.lang = parameters.get('lang');
 }
 

@@ -33,7 +33,9 @@ const I18N = {
     showBuffSettings: 'バフ設定を表示',
     jumpToLevel: 'Lv{level}の時間帯へ移動',
     jumpToLevelColumn: 'Lv{level}列へ移動',
-    rateUnit: '/分'
+    rateUnit: '/分',
+    levelGroupBase: 'Lv1〜8',
+    capacityLevelGroupLabel: '表示レベル:'
   },
   en: {
     title: 'Gathering Time Calculator Tool',
@@ -69,7 +71,9 @@ const I18N = {
     showBuffSettings: 'Show buffs',
     jumpToLevel: 'Go to the Lv{level} time range',
     jumpToLevelColumn: 'Go to the Lv{level} column',
-    rateUnit: '/min'
+    rateUnit: '/min',
+    levelGroupBase: 'Lv1-8',
+    capacityLevelGroupLabel: 'Level view:'
   },
   'zh-TW': {
     title: '採集時間計算工具',
@@ -105,7 +109,9 @@ const I18N = {
     showBuffSettings: '顯示加成設定',
     jumpToLevel: '前往 Lv{level} 的時間區間',
     jumpToLevelColumn: '前往 Lv{level} 欄',
-    rateUnit: '/分'
+    rateUnit: '/分',
+    levelGroupBase: 'Lv1〜8',
+    capacityLevelGroupLabel: '顯示等級:'
   },
   'zh-CN': {
     title: '采集时间计算工具',
@@ -141,7 +147,9 @@ const I18N = {
     showBuffSettings: '显示加成设置',
     jumpToLevel: '前往 Lv{level} 的时间区间',
     jumpToLevelColumn: '前往 Lv{level} 列',
-    rateUnit: '/分'
+    rateUnit: '/分',
+    levelGroupBase: 'Lv1〜8',
+    capacityLevelGroupLabel: '显示等级:'
   },
   ko: {
     title: '채집 시간 계산 툴',
@@ -177,7 +185,9 @@ const I18N = {
     showBuffSettings: '버프 설정 표시',
     jumpToLevel: 'Lv{level} 시간대로 이동',
     jumpToLevelColumn: 'Lv{level} 열로 이동',
-    rateUnit: '/분'
+    rateUnit: '/분',
+    levelGroupBase: 'Lv1〜8',
+    capacityLevelGroupLabel: '표시 레벨:'
   },
   ru: {
     title: 'Инструмент расчета времени сбора',
@@ -213,6 +223,8 @@ const I18N = {
     showBuffSettings: 'Показать настройки',
     jumpToLevel: 'Перейти к диапазону времени Lv{level}',
     jumpToLevelColumn: 'Перейти к столбцу Lv{level}',
-    rateUnit: '/мин'
+    rateUnit: '/мин',
+    levelGroupBase: 'Lv1-8',
+    capacityLevelGroupLabel: 'Уровень:'
   }
 };
